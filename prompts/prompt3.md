@@ -4,7 +4,7 @@ This is the most important screen in the app — read the "Onboarding & Role Rou
 
 Build (onboarding)/welcome.tsx:
 
-- Welcome/splash screen (match html-reference/ if a splash design exists)
+- Welcome/splash screen (match html-reference/Splash & Onboarding Forms.html if a splash design exists)
 - Brief app introduction with a "Get Started" button that routes to role-select
 
 Build (onboarding)/role-select.tsx:

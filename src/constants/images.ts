@@ -2,11 +2,11 @@
  * Centralized image exports.
  * Import and register all app images here, then use them via `images.xxx` throughout the app.
  *
- * Example:
- *   import roleDriver from "@/assets/images/role-driver.png";
- *   export const images = { roleDriver };
- *
  * Usage in components:
- *   <Image source={images.roleDriver} />
+ *   <Image source={images.appIcon} />
  */
-export const images = {};
+import appIcon from "@/assets/images/icon.png";
+
+export const images = {
+  appIcon,
+};
