@@ -8,6 +8,8 @@ Do not tell the user directly that they have a problem — show them a number/st
 - Client: "Clients booking for [occasion type] get matched within the hour, on average."
 - Corporate: "Organizations your size typically cut driver-sourcing costs by 20%."
 
+IMPORTANT: Since these are placeholder/mock values, not real platform data, use neutral or explicitly illustrative wording in the subtext (e.g., "Based on typical matching patterns" or "Illustrative platform average") — do not present mock statistics as factual, real-time data claims.
+
 One large stat/statement, minimal supporting text, strong visual. This should feel like the emotional high point of Act 1 so far.
 
 Route to (onboarding)/bridge next.

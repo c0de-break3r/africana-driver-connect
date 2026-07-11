@@ -11,3 +11,5 @@ Once approved, implement:
 - Refund request UI (ties into Dispute Management, built next)
 
 All payment provider secrets and calls must go through backend/serverless functions only.
+
+CRITICAL: All backend payment handlers (escrow holds, releases, refunds, subscription billing) must be idempotent and authoritative. Use request identifiers/tokens to prevent duplicate charges, holds, releases, or refunds from retries or duplicate submissions. State transitions must be managed server-side — the client cannot create, release, or refund a transaction without backend validation and execution.

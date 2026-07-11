@@ -7,4 +7,4 @@ Capture:
 
 Allow partial completion and saving, same pattern as the Driver profile screen.
 
-Store in store/useOwnerProfileStore.ts, persisted via AsyncStorage.
+Store in store/useOwnerProfileStore.ts. Implement using Zustand with AsyncStorage persistence (same pattern as useDriverProfileStore / useOnboardingAnswersStore).

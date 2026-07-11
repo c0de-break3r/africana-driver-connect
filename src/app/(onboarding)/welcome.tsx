@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -170,20 +170,27 @@ export default function Welcome() {
   );
 
   // Typewriter listeners
-  headlineType.addListener(({ value }) => {
-    const n = Math.floor(value);
-    if (n !== hPrev.current) {
-      hPrev.current = n;
-      setHChars(n);
-    }
-  });
-  subtextType.addListener(({ value }) => {
-    const n = Math.floor(value);
-    if (n !== sPrev.current) {
-      sPrev.current = n;
-      setSChars(n);
-    }
-  });
+  useEffect(() => {
+    const headlineListener = headlineType.addListener(({ value }) => {
+      const n = Math.floor(value);
+      if (n !== hPrev.current) {
+        hPrev.current = n;
+        setHChars(n);
+      }
+    });
+    const subtextListener = subtextType.addListener(({ value }) => {
+      const n = Math.floor(value);
+      if (n !== sPrev.current) {
+        sPrev.current = n;
+        setSChars(n);
+      }
+    });
+
+    return () => {
+      headlineType.removeListener(headlineListener);
+      subtextType.removeListener(subtextListener);
+    };
+  }, [headlineType, subtextType]);
 
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

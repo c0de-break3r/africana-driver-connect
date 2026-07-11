@@ -172,6 +172,11 @@ export default function FoundationalQuestions() {
 
   /* ── Save + Continue ── */
   const handleContinue = () => {
+    if (!canContinue) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
     if (step === 0) {
       // Move to Q2
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -189,7 +194,7 @@ export default function FoundationalQuestions() {
     } else if (role === "owner") {
       setOwnerAnswers(
         q1Text,
-        (q1Choice as "trust" | "availability" | "cost" | "no-shows") ?? "trust",
+        (q2Choice as "trust" | "availability" | "cost" | "no-shows") ?? "trust",
       );
     } else if (role === "client") {
       setClientAnswers(
@@ -323,6 +328,7 @@ export default function FoundationalQuestions() {
           <PrimaryButton
             title={step === 0 ? "Next" : "Continue"}
             onPress={handleContinue}
+            disabled={!canContinue}
             style={{ width: "100%" }}
           />
         </Animated.View>

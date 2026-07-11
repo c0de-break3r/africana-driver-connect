@@ -1,3 +1,5 @@
+Read AGENTS.md fully and strictly follow it before starting.
+
 Reference html-reference/* and image-reference/* at project root.
 
 Extract the color palette, font sizes, spacing scale, and border-radius values used across the reference screens.

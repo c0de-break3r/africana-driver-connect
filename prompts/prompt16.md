@@ -4,4 +4,6 @@ Immediately after the congratulations screen, show a native App Store/Play Store
 
 This must fire here, at peak excitement, not later near social proof. Do not add extra friction (no "are you sure" screen) — trigger it directly.
 
-Route to (onboarding)/loading-summary next regardless of whether the user leaves a review.
+Check platform support and availability before requesting the review (StoreReview.isAvailableAsync()). Handle rejected or failed requests gracefully without blocking onboarding.
+
+Always route to (onboarding)/loading-summary next in a finally-style path, regardless of whether the prompt was available, shown, or completed.

@@ -21,6 +21,14 @@ type OnboardingAnswersState = {
   orgSize: string | null;
   /** Corporate: biggest outsourcing challenge. */
   corporateChallenge: "cost" | "reliability" | "compliance" | "scale" | null;
+  /** User's commitment level from Act 3. */
+  commitment:
+    | "extremely"
+    | "very"
+    | "moderately"
+    | "somewhat"
+    | "trying"
+    | null;
   /** Set the user's first name. */
   setFirstName: (name: string) => void;
   /** Set driver-specific answers. */
@@ -43,6 +51,10 @@ type OnboardingAnswersState = {
     size: string,
     challenge: "cost" | "reliability" | "compliance" | "scale",
   ) => void;
+  /** Set the user's commitment level. */
+  setCommitment: (
+    level: "extremely" | "very" | "moderately" | "somewhat" | "trying",
+  ) => void;
   /** Reset all onboarding answers (useful for logout / restart). */
   reset: () => void;
 };
@@ -61,6 +73,13 @@ const initialState = {
     | "reliability"
     | "compliance"
     | "scale"
+    | null,
+  commitment: null as
+    | "extremely"
+    | "very"
+    | "moderately"
+    | "somewhat"
+    | "trying"
     | null,
 };
 
@@ -82,6 +101,7 @@ export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
         set({ preferredOccasionType, bookingFrequency }),
       setCorporateAnswers: (orgSize, corporateChallenge) =>
         set({ orgSize, corporateChallenge }),
+      setCommitment: (commitment) => set({ commitment }),
       reset: () => set(initialState),
     }),
     {

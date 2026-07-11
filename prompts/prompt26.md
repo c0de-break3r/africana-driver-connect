@@ -8,4 +8,4 @@ Capture:
 - Departments (add/edit multiple)
 - Billing contact / accounts email
 
-Store in store/useCorporateProfileStore.ts.
+Store in store/useCorporateProfileStore.ts. Implement using Zustand with AsyncStorage persistence (same pattern as other profile stores).

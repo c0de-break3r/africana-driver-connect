@@ -1,4 +1,4 @@
-Read AGENTS.md fully before starting.
+Read AGENTS.md fully and strictly follow it before starting.
 
 Initialize a new Expo project for Africana Driver Connect using:
 - Expo Router
