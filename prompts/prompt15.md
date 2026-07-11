@@ -1,12 +1,9 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 2, step 13) before starting.
 
-Ask permission before adding a payment SDK (Mobile Money API, Paystack, or Stripe) and explain why, per AGENTS.md.
+Build (onboarding)/congratulations.tsx — the emotional peak of the entire onboarding flow:
+- Congratulate the user by name on completing the action from Prompt 14
+- Show a concrete starting milestone: Driver/Owner — "Verification streak: Day 1"; Client/Corporate — "Booking readiness: Started"
+- Add a celebratory animation (confetti, scale-bounce, or similar) and haptic feedback (success pattern) per Motion & Interaction Rules
+- Use a custom illustration from image-reference/ if one exists for this moment
 
-Once approved, implement:
-
-- Wallet balance display (placeholder balance backed by backend)
-- Payment method selection at booking confirmation (reuse client's preferred method from onboarding)
-- Escrow-style hold on booking confirmation, release on completion (simple state machine, not a full financial engine)
-- Refund request UI (ties into Dispute Management, built next)
-
-All payment provider secrets and calls must go through backend/serverless functions only.
+Route to (onboarding)/review-prompt next.

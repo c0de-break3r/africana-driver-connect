@@ -1,11 +1,13 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 2, step 12) before starting.
 
-Ask permission before adding: recommend react-native-maps (or Google Maps SDK) for live tracking, route monitoring, ETA calculation, and geofencing, and explain why, per AGENTS.md library approval rule.
+Build (onboarding)/trial.tsx — a hands-on walkthrough of the core workflow, using the user's own answers. The user must DO the action, not just view a static screenshot of it. Use mocked/placeholder data behind the interaction for now.
 
-Once approved, implement:
+By role:
+- Driver: set availability status (interactive toggle), then see 2-3 mocked matched job cards appear based on stated vehicle types/experience
+- Vehicle Owner: post a one-tap mock job listing, then see a mocked shortlist of verified drivers appear
+- Client: perform a real search interaction (location + occasion type pre-filled), then see mocked live driver/vehicle match results appear
+- Corporate: tap through a mocked "build your outsourcing plan" flow using their stated org size/needs
 
-- Live driver location on the Client tracking screen during an active booking
-- ETA calculation display
-- Basic geofencing trigger (e.g. "Driver arrived" state change) for pickup point
+Add subtle interaction animations (card entrance, button press feedback, haptic feedback on the key action) per Motion & Interaction Rules.
 
-Keep all map API keys in backend/serverless config — never in the client bundle.
+Route to (onboarding)/congratulations next.

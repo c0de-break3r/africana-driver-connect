@@ -1,20 +1,12 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 1) before starting.
 
-Set up Clerk authentication per AGENTS.md — do not build custom auth.
+Build (onboarding)/welcome.tsx:
+- Simple, minimalistic, colorful, on-brand screen
+- Warm greeting headline, e.g. "Hey." or "Hey there."
+- One short supporting line, on-brand tone
+- Single primary CTA to continue — no login, no form, nothing to fill in
+- Add a subtle entrance animation (fade/scale) per Motion & Interaction Rules
 
-Build the (auth)/ route group:
+This is the very first screen the user sees. Do not add any login/signup element here.
 
-- Phone/email sign-up
-- OTP verification
-- Social login buttons (if present in reference)
-
-Auth is role-aware at this stage — the selected role from onboarding (prompt 3) is already stored in Zustand and will be associated with the user profile after successful auth.
-
-Store the authenticated user session using Clerk's hooks. Do not persist tokens manually.
-
-After successful auth, route the user into their role-specific onboarding branch or dashboard based on the role selected during onboarding:
-
-- Driver → (onboarding)/driver-setup
-- Owner → (onboarding)/owner-setup
-- Client → (onboarding)/client-setup
-- Corporate → (onboarding)/corporate-setup
+Route to (onboarding)/problem next.

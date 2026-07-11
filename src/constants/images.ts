@@ -6,7 +6,9 @@
  *   <Image source={images.appIcon} />
  */
 import appIcon from "@/assets/images/icon.png";
+import mascot from "@/assets/images/mascot.png";
 
 export const images = {
   appIcon,
+  mascot,
 };

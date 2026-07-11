@@ -1,0 +1,92 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+
+type OnboardingAnswersState = {
+  /** The user's first name, null until provided. */
+  firstName: string | null;
+  /** Driver: years of driving experience. */
+  yearsExperience: string | null;
+  /** Driver: current employment status. */
+  employmentStatus: "employed" | "looking" | "open" | null;
+  /** Owner: number of vehicles owned. */
+  vehicleCount: string | null;
+  /** Owner: biggest driver-hiring pain point. */
+  ownerPainPoint: "trust" | "availability" | "cost" | "no-shows" | null;
+  /** Client: preferred occasion type. */
+  preferredOccasionType: string | null;
+  /** Client: booking frequency. */
+  bookingFrequency: "occasional" | "regular" | null;
+  /** Corporate: organization size. */
+  orgSize: string | null;
+  /** Corporate: biggest outsourcing challenge. */
+  corporateChallenge: "cost" | "reliability" | "compliance" | "scale" | null;
+  /** Set the user's first name. */
+  setFirstName: (name: string) => void;
+  /** Set driver-specific answers. */
+  setDriverAnswers: (
+    years: string,
+    status: "employed" | "looking" | "open",
+  ) => void;
+  /** Set owner-specific answers. */
+  setOwnerAnswers: (
+    count: string,
+    painPoint: "trust" | "availability" | "cost" | "no-shows",
+  ) => void;
+  /** Set client-specific answers. */
+  setClientAnswers: (
+    occasion: string,
+    frequency: "occasional" | "regular",
+  ) => void;
+  /** Set corporate-specific answers. */
+  setCorporateAnswers: (
+    size: string,
+    challenge: "cost" | "reliability" | "compliance" | "scale",
+  ) => void;
+  /** Reset all onboarding answers (useful for logout / restart). */
+  reset: () => void;
+};
+
+const initialState = {
+  firstName: null,
+  yearsExperience: null,
+  employmentStatus: null as "employed" | "looking" | "open" | null,
+  vehicleCount: null,
+  ownerPainPoint: null as "trust" | "availability" | "cost" | "no-shows" | null,
+  preferredOccasionType: null,
+  bookingFrequency: null as "occasional" | "regular" | null,
+  orgSize: null,
+  corporateChallenge: null as
+    | "cost"
+    | "reliability"
+    | "compliance"
+    | "scale"
+    | null,
+};
+
+/**
+ * Persisted store for the user's onboarding answers.
+ * The name captured here is reused in headlines and reflections
+ * throughout the rest of onboarding.
+ */
+export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
+  persist(
+    (set) => ({
+      ...initialState,
+      setFirstName: (firstName) => set({ firstName }),
+      setDriverAnswers: (yearsExperience, employmentStatus) =>
+        set({ yearsExperience, employmentStatus }),
+      setOwnerAnswers: (vehicleCount, ownerPainPoint) =>
+        set({ vehicleCount, ownerPainPoint }),
+      setClientAnswers: (preferredOccasionType, bookingFrequency) =>
+        set({ preferredOccasionType, bookingFrequency }),
+      setCorporateAnswers: (orgSize, corporateChallenge) =>
+        set({ orgSize, corporateChallenge }),
+      reset: () => set(initialState),
+    }),
+    {
+      name: "africana-onboarding-answers",
+      storage: createJSONStorage(() => AsyncStorage),
+    },
+  ),
+);

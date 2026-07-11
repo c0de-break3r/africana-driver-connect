@@ -1,15 +1,5 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 3, step 17) before starting.
 
-Verify against the acceptance criteria:
+Build (onboarding)/snapshot.tsx: one final personalized reflection screen — current state → goal — using the name and answers collected so far. This is the last screen before permissions/paywall, so keep it about the user, not the app.
 
-1. Users can register and authenticate
-2. Drivers can upload and (eventually) verify documents
-3. Vehicle owners can post driver vacancies
-4. Clients can book transport
-5. Drivers can apply for jobs
-6. Payments can be processed (placeholder/sandbox is acceptable at this stage)
-7. GPS tracking functions correctly
-8. Reports are generated (placeholder data acceptable)
-9. Mobile app runs cleanly on both Android and iOS via Expo Go
-
-Report which items pass, which are placeholder-only, and what remains before a real backend/production launch.
+Route to (onboarding)/permissions next.

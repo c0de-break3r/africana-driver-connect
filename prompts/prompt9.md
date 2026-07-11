@@ -1,14 +1,13 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the AGENTS.md fully espectially "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 7) before starting.
 
-Build the (driver)/ route group:
+Build (onboarding)/bombshell.tsx: a single, personalized data-snapshot screen computed from the name, role, and foundational answers already collected. Use placeholder/mock stats for now — no real backend data yet.
 
-- Dashboard: verification status banner, quick stats (applications, active job), availability toggle (Available/Busy/On Leave/Employed)
-- Jobs: list of open vacancies with filters (vehicle type, location, salary)
-- Applications: status tracker (Applied, Shortlisted, Rejected, Hired)
-- Earnings: simple summary view (placeholder data for now)
-- Messages: placeholder inbox UI (real-time comes later)
-- Ratings: display driver's own rating and reviews
+Do not tell the user directly that they have a problem — show them a number/stat and let them draw the conclusion. Examples:
+- Driver: "Drivers with [X]+ years experience like you, [Name], get matched 3x faster on average."
+- Vehicle Owner: "Owners who struggle with [pain point] save an average of 5 hours a week once matched with verified drivers."
+- Client: "Clients booking for [occasion type] get matched within the hour, on average."
+- Corporate: "Organizations your size typically cut driver-sourcing costs by 20%."
 
-Use data/vehicleTypes.ts and data/driverCategories.ts for dropdown/filter options — create these files now if they don't exist.
+One large stat/statement, minimal supporting text, strong visual. This should feel like the emotional high point of Act 1 so far.
 
-Match html-reference/ layouts wherever a driver screen design exists.
+Route to (onboarding)/bridge next.

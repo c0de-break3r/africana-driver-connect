@@ -1,10 +1,10 @@
 import { type ReactNode } from "react";
 import {
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
-    type ViewStyle,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ViewStyle,
 } from "react-native";
 
 type PrimaryButtonProps = {
@@ -49,16 +49,17 @@ export function PrimaryButton({
 const styles = StyleSheet.create({
   button: {
     backgroundColor: "#2C3E5B",
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 28,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.12)",
+    shadowColor: "rgba(15, 23, 42, 0.15)",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 1,
     shadowRadius: 30,
     elevation: 8,
+    minHeight: 56,
     opacity: 1,
   },
   buttonPressed: {
@@ -75,7 +76,8 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#FFFFFF",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
+    letterSpacing: 0.3,
   },
 });

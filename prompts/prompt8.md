@@ -1,11 +1,12 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 6) before starting.
 
-Build (onboarding)/corporate-setup.tsx:
+Build (onboarding)/foundational-questions.tsx, branching by role, 2 short questions each — these exist specifically to set up the next screen's personalized stat, not to fill time:
 
-Step 1: Company name, industry, company size
-Step 2: Departments (allow adding multiple department names, e.g. "Logistics", "Sales")
-Step 3: Primary need — Driver Outsourcing, Fleet Outsourcing, Staff Transportation (multi-select)
+Driver: years of driving experience; current employment status (employed / looking / open to offers)
+Vehicle Owner: number of vehicles owned; biggest driver-hiring pain point (trust, availability, cost, no-shows)
+Client: occasion type (Wedding, Airport, Event, Daily Commute, Business Trip, Other) — store as `preferredOccasionType`; booking frequency (occasional / regular)
+Corporate: organization size; biggest outsourcing challenge (cost, reliability, compliance, scale)
 
-Store in store/useCorporateProfileStore.ts.
+Store answers in store/useOnboardingAnswersStore.ts.
 
-Route to (corporate)/dashboard.
+Route to (onboarding)/bombshell next.

@@ -1,11 +1,9 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 8) before starting.
 
-Build the (owner)/ route group:
+Build (onboarding)/bridge.tsx:
+- Headline offering a way out, referencing the name, e.g. "It doesn't have to be this way, [Name]. Let's build your plan."
+- One short supporting line framing what's coming next as personalized and achievable
 
-- Dashboard: overview of owned vehicles + open vacancies
-- Vehicles: list/add/edit vehicle profiles
-- Post Job: form matching FR-401 fields (position, vehicle type, salary, location, working hours, duration)
-- Applicants: view, shortlist, reject, hire applicants per job posting
-- Payments: placeholder summary (real integration comes later)
+Do not leave the user sitting in the problem from the bombshell screen — this screen's entire job is to offer hope and momentum.
 
-Use shared components/ (Card, PrimaryButton, StatusBadge) — do not duplicate UI logic already built for the Driver dashboard.
+Route to (onboarding)/question-bank next.

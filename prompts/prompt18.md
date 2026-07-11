@@ -1,11 +1,11 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 3, step 16) before starting.
 
-Go through every screen built so far and:
+Build (onboarding)/commitment.tsx:
+- Question: "How committed are you to making this happen, [Name]?"
+- Options ranging from "Extremely committed" to "Just trying it out"
+- Respond to each choice with tailored, affirming copy (do not shame or pressure a low-commitment answer — affirm it too, just differently)
+- Add haptic feedback on selection
 
-- Verify pixel-fidelity against html-reference/ and image-reference/ per AGENTS.md UI Implementation Rules
-- Add friendly empty states (no jobs yet, no bookings yet, etc.)
-- Add loading skeletons where data is fetched
-- Verify large touch targets and consistent spacing across all four role dashboards
-- Run bun run lint and bun run typecheck, fix all errors
+Store the answer in store/useOnboardingAnswersStore.ts.
 
-Report a summary of what was fixed, screen by screen.
+Route to (onboarding)/snapshot next.

@@ -1,14 +1,7 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 2, step 14) before starting.
 
-Build shared rating flow:
+Immediately after the congratulations screen, show a native App Store/Play Store review prompt (use Expo's StoreReview API — ask permission before adding if not already installed, per AGENTS.md).
 
-- 1–5 star rating + optional comment after a completed booking or job
-- Ratings apply bidirectionally (Driver rates Client/Owner, Client rates Driver, etc.)
+This must fire here, at peak excitement, not later near social proof. Do not add extra friction (no "are you sure" screen) — trigger it directly.
 
-Build Dispute Management:
-
-- Dispute types: No Show, Poor Service, Payment Dispute, Vehicle Condition
-- Workflow: Complaint → Investigation → Resolution → Closure (status tracker UI)
-- Simple form to file a dispute from a completed/active booking
-
-Store dispute and rating data via the backend, not AsyncStorage — this is shared/multi-user data.
+Route to (onboarding)/loading-summary next regardless of whether the user leaves a review.
