@@ -42,7 +42,10 @@ export default function Name() {
   const footerOpacity = useRef(new Animated.Value(0)).current;
   const footerY = useRef(new Animated.Value(20)).current;
 
-  // Keyboard show/hide — shrink card, expand when dismissed
+  // Animated values for keyboard shift
+  const contentShiftY = useRef(new Animated.Value(0)).current;
+
+  // Keyboard show/hide — shift content up, shrink card
   useEffect(() => {
     const showSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
@@ -56,6 +59,11 @@ export default function Name() {
           }),
           Animated.timing(cardScale, {
             toValue: 0.6,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.timing(contentShiftY, {
+            toValue: -40,
             duration: 250,
             useNativeDriver: true,
           }),
@@ -78,6 +86,11 @@ export default function Name() {
             friction: 12,
             useNativeDriver: true,
           }),
+          Animated.timing(contentShiftY, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
         ]).start();
       },
     );
@@ -85,7 +98,7 @@ export default function Name() {
       showSub.remove();
       hideSub.remove();
     };
-  }, [cardOpacity, cardScale]);
+  }, [cardOpacity, cardScale, contentShiftY]);
 
   useFocusEffect(
     useCallback(() => {
@@ -208,65 +221,78 @@ export default function Name() {
 
           {/* ── Scrollable content ── */}
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={[
+              styles.scrollContent,
+              keyboardVisible && styles.scrollContentKeyboard,
+            ]}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             bounces={false}
           >
-            {/* Illustration card — shrinks when keyboard visible */}
+            {/* Everything shifts up when keyboard opens */}
             <Animated.View
               style={[
-                styles.card,
-                {
-                  opacity: cardOpacity,
-                  transform: [{ translateY: cardY }, { scale: cardScale }],
-                  marginBottom: keyboardVisible ? 8 : 24,
-                },
+                styles.innerContent,
+                { transform: [{ translateY: contentShiftY }] },
               ]}
             >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconEmoji}>👋</Text>
-              </View>
-              <Text style={styles.cardLabel}>Let&apos;s Start</Text>
-            </Animated.View>
+              {/* Illustration card — shrinks when keyboard visible */}
+              <Animated.View
+                style={[
+                  styles.card,
+                  {
+                    opacity: cardOpacity,
+                    transform: [{ translateY: cardY }, { scale: cardScale }],
+                    marginBottom: keyboardVisible ? 8 : 24,
+                  },
+                ]}
+              >
+                <View style={styles.iconCircle}>
+                  <Text style={styles.iconEmoji}>👋</Text>
+                </View>
+                <Text style={styles.cardLabel}>Let&apos;s Start</Text>
+              </Animated.View>
 
-            {/* Headline */}
-            <Animated.View
-              style={{
-                opacity: inputOpacity,
-                transform: [{ translateY: inputY }],
-              }}
-            >
-              <Text style={styles.headline}>What&apos;s your first name?</Text>
-            </Animated.View>
+              {/* Headline */}
+              <Animated.View
+                style={{
+                  opacity: inputOpacity,
+                  transform: [{ translateY: inputY }],
+                }}
+              >
+                <Text style={styles.headline}>
+                  What&apos;s your first name?
+                </Text>
+              </Animated.View>
 
-            {/* Name input */}
-            <Animated.View
-              style={{
-                opacity: inputOpacity,
-                transform: [{ translateY: inputY }],
-                width: "100%",
-              }}
-            >
-              <TextInput
-                ref={inputRef}
-                value={value}
-                onChangeText={setValue}
-                placeholder="e.g. Kwame"
-                placeholderTextColor="#B0BEC5"
-                style={styles.input}
-                autoCapitalize="words"
-                autoCorrect={false}
-                returnKeyType="done"
-                onSubmitEditing={handleContinue}
-                maxLength={40}
-              />
-            </Animated.View>
+              {/* Name input */}
+              <Animated.View
+                style={{
+                  opacity: inputOpacity,
+                  transform: [{ translateY: inputY }],
+                  width: "100%",
+                }}
+              >
+                <TextInput
+                  ref={inputRef}
+                  value={value}
+                  onChangeText={setValue}
+                  placeholder="e.g. Kwame"
+                  placeholderTextColor="#B0BEC5"
+                  style={styles.input}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="done"
+                  onSubmitEditing={handleContinue}
+                  maxLength={40}
+                />
+              </Animated.View>
 
-            {/* Hint text */}
-            <Animated.Text style={[styles.subtext, { opacity: hintOpacity }]}>
-              We&apos;ll use it to personalize your experience.
-            </Animated.Text>
+              {/* Hint text */}
+              <Animated.Text style={[styles.subtext, { opacity: hintOpacity }]}>
+                We&apos;ll use it to personalize your experience.
+              </Animated.Text>
+            </Animated.View>
           </ScrollView>
 
           {/* ── Bottom CTA ── */}
@@ -329,6 +355,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 24,
+  },
+  scrollContentKeyboard: {
+    justifyContent: "flex-start",
+    paddingTop: 8,
+  },
+  innerContent: {
+    alignItems: "center",
+    width: "100%",
   },
   card: {
     width: "100%",

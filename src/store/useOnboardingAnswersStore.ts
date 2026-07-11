@@ -29,6 +29,8 @@ type OnboardingAnswersState = {
     | "somewhat"
     | "trying"
     | null;
+  /** Deep question-bank answers keyed by question ID (e.g. "driver_held_back"). */
+  questionBankAnswers: Record<string, string>;
   /** Set the user's first name. */
   setFirstName: (name: string) => void;
   /** Set driver-specific answers. */
@@ -55,6 +57,8 @@ type OnboardingAnswersState = {
   setCommitment: (
     level: "extremely" | "very" | "moderately" | "somewhat" | "trying",
   ) => void;
+  /** Store a single question-bank answer. */
+  setQuestionBankAnswer: (questionId: string, answer: string) => void;
   /** Reset all onboarding answers (useful for logout / restart). */
   reset: () => void;
 };
@@ -81,6 +85,7 @@ const initialState = {
     | "somewhat"
     | "trying"
     | null,
+  questionBankAnswers: {} as Record<string, string>,
 };
 
 /**
@@ -102,6 +107,13 @@ export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
       setCorporateAnswers: (orgSize, corporateChallenge) =>
         set({ orgSize, corporateChallenge }),
       setCommitment: (commitment) => set({ commitment }),
+      setQuestionBankAnswer: (questionId, answer) =>
+        set((state) => ({
+          questionBankAnswers: {
+            ...state.questionBankAnswers,
+            [questionId]: answer,
+          },
+        })),
       reset: () => set(initialState),
     }),
     {
