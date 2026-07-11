@@ -1,11 +1,16 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 9) before starting.
 
-Build the (client)/ route group:
+Build (onboarding)/question-bank.tsx as a deeper series of role-specific questions (roughly 4-6 per role), each followed by a brief reflection screen mirroring the answer back before the next question (e.g. "Got it, [Name] — you're looking for a driver for weddings and events.").
 
-- Search: search transport by location, vehicle type, capacity, price
-- Booking: booking request form (pickup point, destination, date, time, passenger count, vehicle type) — pre-fill occasion type from onboarding if set
-- Driver Hire: separate flow for hiring a driver directly (hourly/daily/weekly/monthly)
-- Tracking: placeholder live tracking screen (map integration comes in a later prompt)
-- History: past bookings list with status (Requested, Accepted, Assigned, In Progress, Completed)
+Be deliberate with both questions and answer options — answers should reflect specific struggles the target user actually has, phrased so the user thinks "that's literally me," not generic categories.
 
-Match html-reference/ for search and booking screen layouts if present.
+Driver examples: "What's held you back from getting hired so far?" (no verified profile, no referrals, inconsistent job postings, distrustful owners); "What matters most in a job?" (pay, stability, flexible hours, respect)
+Vehicle Owner examples: "What's gone wrong with drivers before?" (no-shows, poor driving, dishonesty, no license); "What do you need most?" (speed, trust, affordability, availability)
+Client examples: "What's stressed you out about booking transport before?" (unreliable drivers, unclear pricing, safety concerns, no tracking)
+Corporate examples: "What's the biggest risk in your current setup?" (compliance, cost overruns, driver turnover, no accountability)
+
+End with a final reflection screen where each of the user's answers fades in one line at a time, using the FadeInText component from Prompt 02.
+
+Store all answers in store/useOnboardingAnswersStore.ts.
+
+Route to (onboarding)/closing-reflection next.

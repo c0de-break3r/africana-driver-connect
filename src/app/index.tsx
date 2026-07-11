@@ -1,11 +1,10 @@
-import { Text, View } from "react-native";
+import { Redirect } from "expo-router";
 
-export default function Home() {
-  return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="text-lg font-semibold text-gray-900">
-        Africana Driver Connect
-      </Text>
-    </View>
-  );
+/**
+ * Root index — redirects to the onboarding welcome screen.
+ * Once auth is implemented, this will check auth state and
+ * route to the appropriate dashboard instead.
+ */
+export default function Index() {
+  return <Redirect href="/(onboarding)/welcome" />;
 }

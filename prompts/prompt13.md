@@ -1,15 +1,14 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 2, step 11) before starting.
 
-Set up a backend/serverless function (per AGENTS.md — never expose this logic or any keys client-side) that implements basic matching:
+Set up Clerk authentication per AGENTS.md — do not build custom auth.
 
-Given a booking or job request, rank available drivers/vehicles by:
+Build the (auth)/ route group:
+- Sign-up screen: phone/email + OTP verification
+- Framing copy referencing the name and what's been built so far, e.g. "Save your answers, [Name] — create your account to continue"
+- Social login buttons (if present in reference)
 
-- Proximity (use location data)
-- Availability
-- Rating
-- Cost
-- Experience
+The underlying Clerk flow is identical regardless of role — only the framing copy changes based on store/useRoleStore.ts.
 
-Return a ranked list to the client. Start with a simple weighted-scoring function — do not overengineer with ML at this stage.
+Store the authenticated session using Clerk's hooks. Do not persist tokens manually.
 
-Wire this into the Jobs (owner) and Search (client) screens to show "Top Matches" instead of a plain unordered list.
+Route to (onboarding)/trial next.

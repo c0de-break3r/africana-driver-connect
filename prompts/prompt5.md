@@ -1,13 +1,11 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, steps 2-3) before starting.
 
-Build (onboarding)/driver-setup.tsx as a short multi-step flow:
+Build two screens:
 
-Step 1: Full name, gender, date of birth, nationality, languages
-Step 2: License number, license class, expiry date, issuing authority
-Step 3: Years of experience, vehicle types driven, certifications
+(onboarding)/problem.tsx: state the user's struggle plainly, e.g. "Finding a driver you can actually trust takes weeks — or a lucky guess."
 
-Do NOT require document upload (license photo, national ID, police clearance) to complete onboarding — capture a placeholder "Upload later" state per driver, and route them into the (driver)/ dashboard with a persistent "Complete verification" banner instead of blocking signup.
+(onboarding)/solution.tsx: immediately answer it, e.g. "Africana Driver Connect matches you with verified drivers and vehicles in minutes."
 
-Store this data in Zustand (store/useDriverProfileStore.ts), persisted via AsyncStorage for now — no backend yet.
+Keep each to one headline + one supporting line. By the end of these two screens the user must know exactly what the app does. Match visual style and any illustrations from image-reference/ if available.
 
-End this flow at a "Verification in progress" trust screen before routing to (driver)/dashboard.
+Route to (onboarding)/name next.

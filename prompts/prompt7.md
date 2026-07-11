@@ -1,12 +1,14 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 5) before starting.
 
-Build (onboarding)/client-setup.tsx:
+Build (onboarding)/role-question.tsx:
+- Headline using the user's name from the previous screen: "What's slowing you down right now, [Name]?"
+- Four answer cards, phrased as struggles/needs rather than plain role labels:
+  - "I can't find reliable work as a driver" → Driver
+  - "I can't find drivers I can trust" → Vehicle Owner
+  - "I need a driver for an occasion or trip" → Client
+  - "I need to outsource drivers or fleet for my organization" → Corporate Client
+- Add haptic feedback on card selection per Motion & Interaction Rules
 
-Step 1: Location (capture via device location permission, fallback to manual entry)
-Step 2: Preferred payment method (Mobile Money, Card, Cash — placeholder selection only, no real payment integration yet)
-Step 3: Primary use case — occasion type: Wedding, Airport, Event, Daily Commute, Other
-(This field matters — it differentiates Client from generic ride-hailing per AGENTS.md. Store it clearly as `preferredOccasionType`.)
+Store the role in store/useRoleStore.ts (persisted via AsyncStorage).
 
-Store in store/useClientProfileStore.ts.
-
-Route directly to (client)/dashboard — no verification gate for Clients.
+Route to (onboarding)/foundational-questions next.

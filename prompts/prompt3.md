@@ -1,22 +1,7 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Image Generation Rules" section of AGENTS.md (Character / Illustration Style Sheet) before starting.
 
-This is the most important screen in the app — read the "Onboarding & Role Routing Rules" section of AGENTS.md before starting.
+If image generation is enabled, generate a single character/mascot style sheet: 4-5 reference poses of the same character in one generation session (neutral/welcome, celebrating, thinking, concerned, encouraging), matching the tone of html-reference/ and image-reference/ if a character already exists there.
 
-Build (onboarding)/welcome.tsx:
+Save these to image-reference/style-sheet/ with clear naming (e.g. mascot-welcome.png, mascot-celebrating.png).
 
-- Welcome/splash screen (match html-reference/ if a splash design exists)
-- Brief app introduction with a "Get Started" button that routes to role-select
-
-Build (onboarding)/role-select.tsx:
-
-- Four visual role cards: Driver, Vehicle Owner, Client, Corporate Client
-- Each card has an icon/illustration (from image-reference/), a title, and a one-line description:
-  - Driver: "I drive — find job opportunities"
-  - Vehicle Owner: "I own a vehicle — find drivers to hire"
-  - Client: "I need a ride or driver for an occasion"
-  - Corporate: "I manage outsourced drivers or fleets for my organization"
-- This must feel like a genuine fork, not a settings toggle — match spacing/hierarchy from html-reference/ if a role-select design exists
-
-On selection, store the role in a Zustand store (store/useRoleStore.ts) persisted to AsyncStorage, then route to (auth)/sign-up.
-
-Do not build the onboarding branch screens yet — those come in prompts 5–8.
+Do not generate any onboarding illustration in later prompts without referencing this style sheet first. If image generation is not enabled, flag this and ask the user to supply the style sheet manually before Prompt 04 (Welcome Screen).

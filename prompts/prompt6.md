@@ -1,11 +1,8 @@
-Read AGENTS.md fully and strictly follow it before starting.
+Read the "Onboarding & Role Routing Rules" section of AGENTS.md (Act 1, step 4) before starting.
 
-Build (onboarding)/owner-setup.tsx:
+Build (onboarding)/name.tsx:
+- Simple input asking for the user's first name
+- Store it in store/useOnboardingAnswersStore.ts (create if it doesn't exist)
+- This name must be reused in headlines and reflections throughout the rest of onboarding — confirm you understand this before building later screens
 
-Step 1: Vehicle number, make, model, year, color, seating capacity
-Step 2: Vehicle category (Sedan, SUV, Taxi, Bus, Truck, Luxury, School Bus)
-Step 3: Document upload placeholders (registration, insurance, roadworthy certificate) — same as driver flow, defer actual upload, allow "complete later"
-
-Store in store/useOwnerProfileStore.ts, persisted via AsyncStorage.
-
-Route to a brief "Vehicle pending verification" screen, then to (owner)/dashboard.
+Route to (onboarding)/role-question next.
