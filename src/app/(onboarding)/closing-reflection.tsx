@@ -92,7 +92,8 @@ const GOAL_OPTIONS_BY_ROLE: Record<string, ChoiceOption[]> = {
 };
 
 function getGoalQuestion(role: string | null): ClosingQuestion {
-  const options = GOAL_OPTIONS_BY_ROLE[role ?? "driver"] ?? GOAL_OPTIONS_BY_ROLE.driver;
+  const options =
+    GOAL_OPTIONS_BY_ROLE[role ?? "driver"] ?? GOAL_OPTIONS_BY_ROLE.driver;
   return {
     id: "closing_biggest_goal",
     question: "What's your biggest goal this month?",
@@ -209,7 +210,7 @@ export default function ClosingReflection() {
                     toValue: 1,
                     tension: 50,
                     friction: 8,
-                    useNativeDriver: true,
+                    useNativeDriver: false,
                   }),
                   Animated.sequence([
                     Animated.delay(100),
@@ -217,7 +218,7 @@ export default function ClosingReflection() {
                       toValue: 1,
                       tension: 50,
                       friction: 8,
-                      useNativeDriver: true,
+                      useNativeDriver: false,
                     }),
                   ]),
                   Animated.sequence([
@@ -226,7 +227,7 @@ export default function ClosingReflection() {
                       toValue: 1,
                       tension: 50,
                       friction: 8,
-                      useNativeDriver: true,
+                      useNativeDriver: false,
                     }),
                   ]),
                   Animated.sequence([
@@ -235,7 +236,7 @@ export default function ClosingReflection() {
                       toValue: 1,
                       tension: 50,
                       friction: 8,
-                      useNativeDriver: true,
+                      useNativeDriver: false,
                     }),
                   ]),
                 ]),
@@ -311,7 +312,7 @@ export default function ClosingReflection() {
             toValue: 1,
             tension: 50,
             friction: 8,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.sequence([
             Animated.delay(100),
@@ -319,7 +320,7 @@ export default function ClosingReflection() {
               toValue: 1,
               tension: 50,
               friction: 8,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]),
           Animated.sequence([
@@ -328,7 +329,7 @@ export default function ClosingReflection() {
               toValue: 1,
               tension: 50,
               friction: 8,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]),
           Animated.sequence([
@@ -337,7 +338,7 @@ export default function ClosingReflection() {
               toValue: 1,
               tension: 50,
               friction: 8,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]),
         ]),
@@ -365,7 +366,8 @@ export default function ClosingReflection() {
     const goalOpt = goalQuestion.options.find((o) => o.value === goalAnswer);
 
     const lines: string[] = [];
-    if (hearOpt) lines.push(`You found us through ${hearOpt.label.toLowerCase()}`);
+    if (hearOpt)
+      lines.push(`You found us through ${hearOpt.label.toLowerCase()}`);
     if (goalOpt) lines.push(`Your top goal: ${goalOpt.label}`);
     return lines;
   }, [allAnswers, goalQuestion]);
@@ -405,6 +407,9 @@ export default function ClosingReflection() {
 
     if (phase === "closing") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      useOnboardingAnswersStore
+        .getState()
+        .setLastCompletedScreen("closing-reflection");
       router.push("/(auth)/sign-up" as Href);
     }
   };
@@ -459,7 +464,7 @@ export default function ClosingReflection() {
           <View style={styles.dotsWrap}>
             <PageDots total={totalSteps} current={currentStep} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Content ── */}
@@ -555,7 +560,9 @@ function QuestionsPhase({
                     </View>
                   )}
                   <View style={styles.choiceContent}>
-                    {opt.icon && <Text style={styles.choiceIcon}>{opt.icon}</Text>}
+                    {opt.icon && (
+                      <Text style={styles.choiceIcon}>{opt.icon}</Text>
+                    )}
                     <Text
                       style={[
                         styles.choiceText,
@@ -597,9 +604,7 @@ function ReflectionPhase({
       <View style={styles.reflectIconWrap}>
         <Text style={styles.reflectIcon}>🎯</Text>
       </View>
-      <Text style={styles.reflectHeadline}>
-        We see you, {firstName}.
-      </Text>
+      <Text style={styles.reflectHeadline}>We see you, {firstName}.</Text>
       <Text style={styles.reflectSubtext}>
         Your answers help us build an experience that&apos;s uniquely yours.
       </Text>
@@ -677,10 +682,7 @@ function ClosingPhase({
                   ]}
                 />
                 <Text
-                  style={[
-                    styles.barValue,
-                    isLast && styles.barValueHighlight,
-                  ]}
+                  style={[styles.barValue, isLast && styles.barValueHighlight]}
                 >
                   {bar.value}h
                 </Text>
@@ -739,15 +741,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

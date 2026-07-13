@@ -209,6 +209,9 @@ export default function FoundationalQuestions() {
     }
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore
+      .getState()
+      .setLastCompletedScreen("foundational-questions");
     router.push("/(onboarding)/bombshell" as Href);
   };
 
@@ -246,7 +249,7 @@ export default function FoundationalQuestions() {
           <View style={styles.dotsWrap}>
             <PageDots total={2} current={step} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Question content ── */}
@@ -454,15 +457,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

@@ -483,6 +483,9 @@ export default function QuestionBank() {
 
     if (phase === "summary") {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      useOnboardingAnswersStore
+        .getState()
+        .setLastCompletedScreen("question-bank");
       router.push("/(onboarding)/closing-reflection" as Href);
     }
   };
@@ -536,7 +539,7 @@ export default function QuestionBank() {
               current={Math.min(qIndex, totalSteps - 1)}
             />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Content ── */}
@@ -742,15 +745,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

@@ -279,6 +279,7 @@ export default function Bombshell() {
 
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("bombshell");
     router.push("/(onboarding)/bridge" as Href);
   };
 
@@ -293,7 +294,7 @@ export default function Bombshell() {
           <View style={styles.dotsWrap}>
             <PageDots total={7} current={6} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Content ── */}
@@ -388,15 +389,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

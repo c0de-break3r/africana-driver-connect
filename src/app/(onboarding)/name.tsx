@@ -2,16 +2,16 @@ import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Animated,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -25,86 +25,49 @@ import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
  * Layout reference: matches problem.tsx / solution.tsx pattern.
  */
 export default function Name() {
-  const [value, setValue] = useState("");
+  const savedName = useOnboardingAnswersStore((s) => s.firstName);
+  const [value, setValue] = useState(savedName ?? "");
   const setFirstName = useOnboardingAnswersStore((s) => s.setFirstName);
   const inputRef = useRef<TextInput>(null);
 
-  // Keyboard state
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  // Input focus state
+  const [isFocused, setIsFocused] = useState(false);
 
   // Staggered animations
-  const cardOpacity = useRef(new Animated.Value(0)).current;
-  const cardY = useRef(new Animated.Value(20)).current;
-  const cardScale = useRef(new Animated.Value(1)).current;
+  const emojiOpacity = useRef(new Animated.Value(0)).current;
+  const emojiScale = useRef(new Animated.Value(0.5)).current;
+  const headlineOpacity = useRef(new Animated.Value(0)).current;
+  const headlineY = useRef(new Animated.Value(15)).current;
   const inputOpacity = useRef(new Animated.Value(0)).current;
   const inputY = useRef(new Animated.Value(15)).current;
   const hintOpacity = useRef(new Animated.Value(0)).current;
   const footerOpacity = useRef(new Animated.Value(0)).current;
   const footerY = useRef(new Animated.Value(20)).current;
 
-  // Animated values for keyboard shift
-  const contentShiftY = useRef(new Animated.Value(0)).current;
-
-  // Keyboard show/hide — shift content up, shrink card
+  // Keyboard show/hide — shift content up when keyboard visible
   useEffect(() => {
     const showSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       () => {
-        setKeyboardVisible(true);
-        Animated.parallel([
-          Animated.timing(cardOpacity, {
-            toValue: 0,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.timing(cardScale, {
-            toValue: 0.6,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.timing(contentShiftY, {
-            toValue: -40,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-        ]).start();
+        // No card to hide — just let KeyboardAvoidingView handle it
       },
     );
     const hideSub = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-        Animated.parallel([
-          Animated.timing(cardOpacity, {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.spring(cardScale, {
-            toValue: 1,
-            tension: 80,
-            friction: 12,
-            useNativeDriver: true,
-          }),
-          Animated.timing(contentShiftY, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      },
+      () => {},
     );
     return () => {
       showSub.remove();
       hideSub.remove();
     };
-  }, [cardOpacity, cardScale, contentShiftY]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      cardOpacity.setValue(0);
-      cardY.setValue(20);
-      cardScale.setValue(1);
+      emojiOpacity.setValue(0);
+      emojiScale.setValue(0.5);
+      headlineOpacity.setValue(0);
+      headlineY.setValue(15);
       inputOpacity.setValue(0);
       inputY.setValue(15);
       hintOpacity.setValue(0);
@@ -112,26 +75,44 @@ export default function Name() {
       footerY.setValue(20);
 
       Animated.parallel([
-        // Card fades in + slides up — 100ms
+        // Emoji pops in — 100ms
         Animated.sequence([
           Animated.delay(100),
           Animated.parallel([
-            Animated.timing(cardOpacity, {
+            Animated.timing(emojiOpacity, {
               toValue: 1,
-              duration: 500,
+              duration: 400,
               useNativeDriver: true,
             }),
-            Animated.timing(cardY, {
-              toValue: 0,
-              duration: 500,
+            Animated.spring(emojiScale, {
+              toValue: 1,
+              tension: 60,
+              friction: 10,
               useNativeDriver: true,
             }),
           ]),
         ]),
 
-        // Input slides in — 400ms
+        // Headline fades in — 350ms
         Animated.sequence([
-          Animated.delay(400),
+          Animated.delay(350),
+          Animated.parallel([
+            Animated.timing(headlineOpacity, {
+              toValue: 1,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+            Animated.timing(headlineY, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]),
+
+        // Input slides in — 550ms
+        Animated.sequence([
+          Animated.delay(550),
           Animated.parallel([
             Animated.timing(inputOpacity, {
               toValue: 1,
@@ -146,9 +127,9 @@ export default function Name() {
           ]),
         ]),
 
-        // Hint fades in — 550ms
+        // Hint fades in — 750ms
         Animated.sequence([
-          Animated.delay(550),
+          Animated.delay(750),
           Animated.timing(hintOpacity, {
             toValue: 1,
             duration: 350,
@@ -156,9 +137,9 @@ export default function Name() {
           }),
         ]),
 
-        // Footer slides in — 700ms
+        // Footer slides in — 900ms
         Animated.sequence([
-          Animated.delay(700),
+          Animated.delay(900),
           Animated.parallel([
             Animated.timing(footerOpacity, {
               toValue: 1,
@@ -173,13 +154,13 @@ export default function Name() {
           ]),
         ]),
       ]).start(() => {
-        // Auto-focus the input after animations finish
         inputRef.current?.focus();
       });
     }, [
-      cardOpacity,
-      cardY,
-      cardScale,
+      emojiOpacity,
+      emojiScale,
+      headlineOpacity,
+      headlineY,
       inputOpacity,
       inputY,
       hintOpacity,
@@ -197,6 +178,7 @@ export default function Name() {
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setFirstName(trimmed);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("name");
     router.push("/(onboarding)/role-question" as Href);
   };
 
@@ -216,83 +198,68 @@ export default function Name() {
             <View style={styles.dotsWrap}>
               <PageDots total={4} current={3} />
             </View>
-            <View style={styles.backBtn} />
+            <View style={styles.backBtnSpacer} />
           </View>
 
           {/* ── Scrollable content ── */}
           <ScrollView
-            contentContainerStyle={[
-              styles.scrollContent,
-              keyboardVisible && styles.scrollContentKeyboard,
-            ]}
+            contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             bounces={false}
           >
-            {/* Everything shifts up when keyboard opens */}
-            <Animated.View
+            {/* Small emoji — no card wrapper */}
+            <Animated.Text
               style={[
-                styles.innerContent,
-                { transform: [{ translateY: contentShiftY }] },
+                styles.emoji,
+                {
+                  opacity: emojiOpacity,
+                  transform: [{ scale: emojiScale }],
+                },
               ]}
             >
-              {/* Illustration card — shrinks when keyboard visible */}
-              <Animated.View
-                style={[
-                  styles.card,
-                  {
-                    opacity: cardOpacity,
-                    transform: [{ translateY: cardY }, { scale: cardScale }],
-                    marginBottom: keyboardVisible ? 8 : 24,
-                  },
-                ]}
-              >
-                <View style={styles.iconCircle}>
-                  <Text style={styles.iconEmoji}>👋</Text>
-                </View>
-                <Text style={styles.cardLabel}>Let&apos;s Start</Text>
-              </Animated.View>
+              👋
+            </Animated.Text>
 
-              {/* Headline */}
-              <Animated.View
-                style={{
-                  opacity: inputOpacity,
-                  transform: [{ translateY: inputY }],
-                }}
-              >
-                <Text style={styles.headline}>
-                  What&apos;s your first name?
-                </Text>
-              </Animated.View>
-
-              {/* Name input */}
-              <Animated.View
-                style={{
-                  opacity: inputOpacity,
-                  transform: [{ translateY: inputY }],
-                  width: "100%",
-                }}
-              >
-                <TextInput
-                  ref={inputRef}
-                  value={value}
-                  onChangeText={setValue}
-                  placeholder="e.g. Kwame"
-                  placeholderTextColor="#B0BEC5"
-                  style={styles.input}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="done"
-                  onSubmitEditing={handleContinue}
-                  maxLength={40}
-                />
-              </Animated.View>
-
-              {/* Hint text */}
-              <Animated.Text style={[styles.subtext, { opacity: hintOpacity }]}>
-                We&apos;ll use it to personalize your experience.
-              </Animated.Text>
+            {/* Headline */}
+            <Animated.View
+              style={{
+                opacity: headlineOpacity,
+                transform: [{ translateY: headlineY }],
+              }}
+            >
+              <Text style={styles.headline}>What&apos;s your first name?</Text>
             </Animated.View>
+
+            {/* Name input */}
+            <Animated.View
+              style={{
+                opacity: inputOpacity,
+                transform: [{ translateY: inputY }],
+                width: "100%",
+              }}
+            >
+              <TextInput
+                ref={inputRef}
+                value={value}
+                onChangeText={setValue}
+                placeholder="e.g. Kwame"
+                placeholderTextColor="#B0BEC5"
+                style={[styles.input, isFocused && styles.inputFocused]}
+                autoCapitalize="words"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleContinue}
+                maxLength={40}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
+              />
+            </Animated.View>
+
+            {/* Hint text */}
+            <Animated.Text style={[styles.subtext, { opacity: hintOpacity }]}>
+              We&apos;ll use it to personalize your experience.
+            </Animated.Text>
           </ScrollView>
 
           {/* ── Bottom CTA ── */}
@@ -331,21 +298,16 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
+  },
+  backBtnSpacer: {
+    width: 40,
   },
   backArrow: {
-    fontSize: 24,
+    fontSize: 28,
     color: "#2C3E5B",
     fontWeight: "300",
-    marginTop: -2,
   },
   dotsWrap: {
     flex: 1,
@@ -354,48 +316,12 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: 24,
+    paddingBottom: 48,
+    paddingTop: 16,
   },
-  scrollContentKeyboard: {
-    justifyContent: "flex-start",
-    paddingTop: 8,
-  },
-  innerContent: {
-    alignItems: "center",
-    width: "100%",
-  },
-  card: {
-    width: "100%",
-    aspectRatio: 1.8,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.08)",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 1,
-    shadowRadius: 24,
-    elevation: 6,
+  emoji: {
+    fontSize: 48,
     marginBottom: 24,
-  },
-  iconCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(44, 62, 91, 0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  iconEmoji: {
-    fontSize: 40,
-  },
-  cardLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6E7E91",
-    letterSpacing: 1,
-    textTransform: "uppercase",
   },
   headline: {
     fontSize: 28,
@@ -403,10 +329,10 @@ const styles = StyleSheet.create({
     color: "#2C3E5B",
     textAlign: "center",
     lineHeight: 36,
-    marginBottom: 20,
+    marginBottom: 32,
   },
   input: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "500",
     color: "#2C3E5B",
     backgroundColor: "#FFFFFF",
@@ -414,7 +340,7 @@ const styles = StyleSheet.create({
     borderColor: "#E8ECF0",
     borderRadius: 16,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 18,
     textAlign: "left",
     shadowColor: "rgba(15, 23, 42, 0.04)",
     shadowOffset: { width: 0, height: 2 },
@@ -422,6 +348,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     marginBottom: 12,
+  },
+  inputFocused: {
+    borderColor: "#2C3E5B",
+    shadowColor: "rgba(44, 62, 91, 0.15)",
+    shadowRadius: 12,
   },
   subtext: {
     fontSize: 15,

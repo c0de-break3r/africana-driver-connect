@@ -6,6 +6,10 @@ import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
 import { images } from "@/constants/images";
+import {
+  ONBOARDING_SCREENS,
+  useOnboardingAnswersStore,
+} from "@/store/useOnboardingAnswersStore";
 
 /**
  * Welcome screen — Act 1, Step 1.
@@ -194,8 +198,24 @@ export default function Welcome() {
 
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("welcome");
     router.push("/(onboarding)/problem" as Href);
   };
+
+  // Auto-redirect if user has saved progress
+  const lastCompletedScreen = useOnboardingAnswersStore(
+    (s) => s.lastCompletedScreen,
+  );
+  const firstName = useOnboardingAnswersStore((s) => s.firstName);
+  useEffect(() => {
+    if (lastCompletedScreen && firstName) {
+      const idx = ONBOARDING_SCREENS.indexOf(lastCompletedScreen);
+      const nextScreen = ONBOARDING_SCREENS[idx + 1];
+      if (nextScreen) {
+        router.replace(`/(onboarding)/${nextScreen}` as Href);
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <ScreenContainer>

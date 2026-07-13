@@ -2,6 +2,22 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+/** Ordered list of onboarding screens for progress tracking. */
+export const ONBOARDING_SCREENS = [
+  "welcome",
+  "problem",
+  "solution",
+  "name",
+  "role-question",
+  "foundational-questions",
+  "bombshell",
+  "bridge",
+  "question-bank",
+  "closing-reflection",
+] as const;
+
+export type OnboardingScreen = (typeof ONBOARDING_SCREENS)[number];
+
 type OnboardingAnswersState = {
   /** The user's first name, null until provided. */
   firstName: string | null;
@@ -29,6 +45,8 @@ type OnboardingAnswersState = {
     | "somewhat"
     | "trying"
     | null;
+  /** The furthest screen the user has completed. */
+  lastCompletedScreen: OnboardingScreen | null;
   /** Deep question-bank answers keyed by question ID (e.g. "driver_held_back"). */
   questionBankAnswers: Record<string, string>;
   /** Set the user's first name. */
@@ -57,6 +75,8 @@ type OnboardingAnswersState = {
   setCommitment: (
     level: "extremely" | "very" | "moderately" | "somewhat" | "trying",
   ) => void;
+  /** Mark a screen as completed (advances progress). */
+  setLastCompletedScreen: (screen: OnboardingScreen) => void;
   /** Store a single question-bank answer. */
   setQuestionBankAnswer: (questionId: string, answer: string) => void;
   /** Reset all onboarding answers (useful for logout / restart). */
@@ -85,6 +105,7 @@ const initialState = {
     | "somewhat"
     | "trying"
     | null,
+  lastCompletedScreen: null as OnboardingScreen | null,
   questionBankAnswers: {} as Record<string, string>,
 };
 
@@ -107,6 +128,18 @@ export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
       setCorporateAnswers: (orgSize, corporateChallenge) =>
         set({ orgSize, corporateChallenge }),
       setCommitment: (commitment) => set({ commitment }),
+      setLastCompletedScreen: (lastCompletedScreen) =>
+        set((state) => {
+          const currentIdx = state.lastCompletedScreen
+            ? ONBOARDING_SCREENS.indexOf(state.lastCompletedScreen)
+            : -1;
+          const newIdx = ONBOARDING_SCREENS.indexOf(lastCompletedScreen);
+          // Only advance, never go backwards
+          if (newIdx > currentIdx) {
+            return { lastCompletedScreen };
+          }
+          return {};
+        }),
       setQuestionBankAnswer: (questionId, answer) =>
         set((state) => ({
           questionBankAnswers: {
