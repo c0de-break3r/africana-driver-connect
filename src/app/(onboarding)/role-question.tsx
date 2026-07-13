@@ -2,12 +2,12 @@ import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -142,6 +142,9 @@ export default function RoleQuestion() {
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setRole(selected);
+    useOnboardingAnswersStore
+      .getState()
+      .setLastCompletedScreen("role-question");
     router.push("/(onboarding)/foundational-questions" as Href);
   };
 
@@ -156,7 +159,7 @@ export default function RoleQuestion() {
           <View style={styles.dotsWrap}>
             <PageDots total={5} current={4} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Headline ── */}
@@ -258,15 +261,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

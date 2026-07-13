@@ -172,6 +172,11 @@ export default function FoundationalQuestions() {
 
   /* ── Save + Continue ── */
   const handleContinue = () => {
+    if (!canContinue) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      return;
+    }
+
     if (step === 0) {
       // Move to Q2
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -189,7 +194,7 @@ export default function FoundationalQuestions() {
     } else if (role === "owner") {
       setOwnerAnswers(
         q1Text,
-        (q1Choice as "trust" | "availability" | "cost" | "no-shows") ?? "trust",
+        (q2Choice as "trust" | "availability" | "cost" | "no-shows") ?? "trust",
       );
     } else if (role === "client") {
       setClientAnswers(
@@ -204,6 +209,9 @@ export default function FoundationalQuestions() {
     }
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore
+      .getState()
+      .setLastCompletedScreen("foundational-questions");
     router.push("/(onboarding)/bombshell" as Href);
   };
 
@@ -241,7 +249,7 @@ export default function FoundationalQuestions() {
           <View style={styles.dotsWrap}>
             <PageDots total={2} current={step} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Question content ── */}
@@ -323,6 +331,7 @@ export default function FoundationalQuestions() {
           <PrimaryButton
             title={step === 0 ? "Next" : "Continue"}
             onPress={handleContinue}
+            disabled={!canContinue}
             style={{ width: "100%" }}
           />
         </Animated.View>
@@ -448,15 +457,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

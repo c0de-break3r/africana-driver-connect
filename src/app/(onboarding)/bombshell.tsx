@@ -43,7 +43,7 @@ function buildStat(
         countUpTarget: 3,
         suffix: "×",
         headline: `Drivers with ${exp} years experience like you, ${firstName}, get matched 3× faster on average.`,
-        subtext: "Based on platform data from verified drivers across Africa.",
+        subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#2ECC71",
         accentBg: "rgba(46, 204, 113, 0.1)",
         icon: "⚡",
@@ -64,7 +64,7 @@ function buildStat(
         countUpTarget: 5,
         suffix: " hrs",
         headline: `Owners who struggle with ${painLabel} save an average of 5 hours a week once matched with verified drivers.`,
-        subtext: "Based on platform data from vehicle owners across Africa.",
+        subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#FF7B54",
         accentBg: "rgba(255, 123, 84, 0.1)",
         icon: "🔑",
@@ -77,7 +77,7 @@ function buildStat(
         countUpTarget: 1,
         suffix: " hr",
         headline: `Clients booking for ${occasion} get matched within the hour, on average.`,
-        subtext: "Based on platform data from clients across Africa.",
+        subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#3B82F6",
         accentBg: "rgba(59, 130, 246, 0.1)",
         icon: "📍",
@@ -89,7 +89,7 @@ function buildStat(
         countUpTarget: 20,
         suffix: "%",
         headline: `Organizations your size typically cut driver-sourcing costs by 20%.`,
-        subtext: "Based on platform data from corporate clients across Africa.",
+        subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#8B5CF6",
         accentBg: "rgba(139, 92, 246, 0.1)",
         icon: "🏢",
@@ -101,7 +101,7 @@ function buildStat(
         countUpTarget: 10,
         suffix: "×",
         headline: `${firstName}, you'll get matched faster than traditional methods.`,
-        subtext: "Based on platform data across Africa.",
+        subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#2C3E5B",
         accentBg: "rgba(44, 62, 91, 0.08)",
         icon: "🚀",
@@ -279,6 +279,7 @@ export default function Bombshell() {
 
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("bombshell");
     router.push("/(onboarding)/bridge" as Href);
   };
 
@@ -293,7 +294,7 @@ export default function Bombshell() {
           <View style={styles.dotsWrap}>
             <PageDots total={7} current={6} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Content ── */}
@@ -388,15 +389,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

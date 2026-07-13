@@ -4,6 +4,7 @@ import { useCallback, useRef } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
+import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 
 /**
  * Solution screen — Act 1, Step 3.
@@ -111,6 +112,7 @@ export default function Solution() {
 
   const handleContinue = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("solution");
     router.push("/(onboarding)/name" as Href);
   };
 
@@ -125,7 +127,7 @@ export default function Solution() {
           <View style={styles.dotsWrap}>
             <PageDots total={4} current={2} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Staggered content ── */}
@@ -204,15 +206,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,

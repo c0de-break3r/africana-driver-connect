@@ -145,6 +145,7 @@ export default function Bridge() {
 
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    useOnboardingAnswersStore.getState().setLastCompletedScreen("bridge");
     router.push("/(onboarding)/question-bank" as Href);
   };
 
@@ -159,7 +160,7 @@ export default function Bridge() {
           <View style={styles.dotsWrap}>
             <PageDots total={8} current={7} />
           </View>
-          <View style={styles.backBtn} />
+          <View style={{ width: 40 }} />
         </View>
 
         {/* ── Content ── */}
@@ -254,15 +255,8 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
   },
   backArrow: {
     fontSize: 24,
