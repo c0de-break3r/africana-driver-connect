@@ -2,12 +2,12 @@ import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import {
-    Animated,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -32,27 +32,26 @@ const STRUGGLES: StruggleCard[] = [
   {
     key: "driver",
     icon: "🚗",
-    struggle: "I can't find reliable work as a driver",
+    struggle: "I am a driver",
   },
   {
     key: "owner",
     icon: "🔑",
-    struggle: "I can't find drivers I can trust",
+    struggle: "I am a vehicle owner",
   },
   {
     key: "client",
     icon: "📍",
-    struggle: "I need a driver for an occasion or trip",
+    struggle: "I need a vehicle or a driver for an event",
   },
   {
     key: "corporate",
     icon: "🏢",
-    struggle: "I need to outsource drivers or fleet for my organization",
+    struggle: "I have a fleet to manage",
   },
 ];
 
 export default function RoleQuestion() {
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
   const setRole = useRoleStore((s) => s.setRole);
   const [selected, setSelected] = useState<UserRole | null>(null);
 
@@ -169,9 +168,7 @@ export default function RoleQuestion() {
             transform: [{ translateY: headlineY }],
           }}
         >
-          <Text style={styles.headline}>
-            What&apos;s slowing you down right now, {firstName}?
-          </Text>
+          <Text style={styles.headline}>How can we help you?</Text>
         </Animated.View>
 
         {/* ── Struggle cards ── */}
@@ -239,6 +236,7 @@ export default function RoleQuestion() {
           <PrimaryButton
             title="Continue"
             onPress={handleContinue}
+            disabled={!selected}
             style={{ width: "100%" }}
           />
         </Animated.View>

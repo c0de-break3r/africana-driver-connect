@@ -81,7 +81,6 @@ const ORG_SIZE_OPTIONS: ChoiceOption[] = [
 
 export default function FoundationalQuestions() {
   const role = useRoleStore((s) => s.role);
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
   const setDriverAnswers = useOnboardingAnswersStore((s) => s.setDriverAnswers);
   const setOwnerAnswers = useOnboardingAnswersStore((s) => s.setOwnerAnswers);
   const setClientAnswers = useOnboardingAnswersStore((s) => s.setClientAnswers);

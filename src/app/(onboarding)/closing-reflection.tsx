@@ -126,11 +126,7 @@ type Phase = "questions" | "reflection" | "closing";
 
 export default function ClosingReflection() {
   const role = useRoleStore((s) => s.role);
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
-  const setQuestionBankAnswer = useOnboardingAnswersStore(
-    (s) => s.setQuestionBankAnswer,
-  );
-  const allAnswers = useOnboardingAnswersStore((s) => s.questionBankAnswers);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const goalQuestion = useMemo(() => getGoalQuestion(role), [role]);
   const questions = useMemo(
@@ -359,8 +355,8 @@ export default function ClosingReflection() {
 
   /* ── Reflection lines ── */
   const reflectionLines = useMemo(() => {
-    const hearAnswer = allAnswers["closing_hear_about"];
-    const goalAnswer = allAnswers["closing_biggest_goal"];
+    const hearAnswer = answers["closing_hear_about"];
+    const goalAnswer = answers["closing_biggest_goal"];
 
     const hearOpt = QUESTION_HEAR.options.find((o) => o.value === hearAnswer);
     const goalOpt = goalQuestion.options.find((o) => o.value === goalAnswer);
@@ -370,7 +366,7 @@ export default function ClosingReflection() {
       lines.push(`You found us through ${hearOpt.label.toLowerCase()}`);
     if (goalOpt) lines.push(`Your top goal: ${goalOpt.label}`);
     return lines;
-  }, [allAnswers, goalQuestion]);
+  }, [answers, goalQuestion]);
 
   /* ── Handlers ── */
   const handleSelectOption = (value: string) => {
@@ -381,7 +377,7 @@ export default function ClosingReflection() {
   const handleContinue = () => {
     if (phase === "questions" && selected) {
       // Save answer
-      setQuestionBankAnswer(currentQ.id, selected);
+      setAnswers((prev) => ({ ...prev, [currentQ.id]: selected }));
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
       if (qIndex < questions.length - 1) {
@@ -418,14 +414,14 @@ export default function ClosingReflection() {
     if (phase === "reflection") {
       setPhase("questions");
       setQIndex(questions.length - 1);
-      const prev = allAnswers[questions[questions.length - 1].id];
+      const prev = answers[questions[questions.length - 1].id];
       setSelected(prev ?? null);
       animateTransition();
       return;
     }
     if (phase === "questions" && qIndex > 0) {
       setQIndex(qIndex - 1);
-      const prev = allAnswers[questions[qIndex - 1].id];
+      const prev = answers[questions[qIndex - 1].id];
       setSelected(prev ?? null);
       animateTransition();
       return;
@@ -470,7 +466,6 @@ export default function ClosingReflection() {
         {/* ── Content ── */}
         {phase === "closing" ? (
           <ClosingPhase
-            firstName={firstName}
             contentOpacity={contentOpacity}
             contentY={contentY}
             bar1Height={bar1Height}
@@ -481,7 +476,6 @@ export default function ClosingReflection() {
           />
         ) : phase === "reflection" ? (
           <ReflectionPhase
-            firstName={firstName}
             lines={reflectionLines}
             contentOpacity={contentOpacity}
             contentY={contentY}
@@ -583,12 +577,10 @@ function QuestionsPhase({
 }
 
 function ReflectionPhase({
-  firstName,
   lines,
   contentOpacity,
   contentY,
 }: {
-  firstName: string;
   lines: string[];
   contentOpacity: Animated.Value;
   contentY: Animated.Value;
@@ -604,7 +596,7 @@ function ReflectionPhase({
       <View style={styles.reflectIconWrap}>
         <Text style={styles.reflectIcon}>🎯</Text>
       </View>
-      <Text style={styles.reflectHeadline}>We see you, {firstName}.</Text>
+      <Text style={styles.reflectHeadline}>We see you.</Text>
       <Text style={styles.reflectSubtext}>
         Your answers help us build an experience that&apos;s uniquely yours.
       </Text>
@@ -621,7 +613,6 @@ function ReflectionPhase({
 }
 
 function ClosingPhase({
-  firstName,
   contentOpacity,
   contentY,
   bar1Height,
@@ -630,7 +621,6 @@ function ClosingPhase({
   bar4Height,
   chartLabelOpacity,
 }: {
-  firstName: string;
   contentOpacity: Animated.Value;
   contentY: Animated.Value;
   bar1Height: Animated.Value;
@@ -651,7 +641,7 @@ function ClosingPhase({
       ]}
     >
       <Text style={styles.closingHeadline}>
-        You&apos;re in the right place, {firstName}.
+        You&apos;re in the right place.
       </Text>
       <Text style={styles.closingSubtext}>
         Here&apos;s why Africana Driver Connect works.

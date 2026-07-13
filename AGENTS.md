@@ -58,6 +58,7 @@ Use the following stack:
 - NativeWind / Tailwind CSS
 - Zustand
 - AsyncStorage
+- Convex for DB
 - Clerk for authentication
 - Maps/location library (e.g. `react-native-maps` or Google Maps SDK) for GPS tracking, live location, and geofencing
 - Server-side API routes or backend functions for secrets, tokens, payment provider calls, and matching logic

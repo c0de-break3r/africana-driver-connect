@@ -3,7 +3,6 @@ import { useRef } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/ui";
-import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 
 /**
  * Trial screen — the first screen users see after authentication.
@@ -11,7 +10,6 @@ import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
  */
 export default function Trial() {
   const { signOut } = useAuth();
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -25,7 +23,7 @@ export default function Trial() {
     <ScreenContainer>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <Text style={styles.emoji}>🎉</Text>
-        <Text style={styles.title}>You're in, {firstName}!</Text>
+        <Text style={styles.title}>You&apos;re in!</Text>
         <Text style={styles.subtitle}>
           Your account is ready.{"\n"}The full onboarding experience{"\n"}is
           coming next.
