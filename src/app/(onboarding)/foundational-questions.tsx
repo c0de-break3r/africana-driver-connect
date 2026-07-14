@@ -1,24 +1,31 @@
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-    Animated,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Animated,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
-import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
+import {
+  OnboardingOptionRow,
+  PageDots,
+  PrimaryButton,
+  ScreenContainer,
+} from "@/components/ui";
 import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 import { useRoleStore } from "@/store/useRoleStore";
 
 /**
  * Foundational questions — Act 1, Step 6.
  * Role-branched, 2 short questions each.
- * These set up the next screen's personalized stat.
+ *
+ * Choice questions use the shared onboarding option-row layout:
+ * headline / centered hint / option list with dividers / disabled CTA until selected.
  */
 
 /* ──────────────────────────────────────────────
@@ -31,7 +38,7 @@ const DRIVER_EXPERIENCE_OPTIONS: ChoiceOption[] = [
   { label: "Less than 1 year", value: "<1" },
   { label: "1–3 years", value: "1-3" },
   { label: "3–7 years", value: "3-7" },
-  { label: "7+ years", value: "7+" },
+  { label: "More than 7 years", value: "7+" },
 ];
 
 const EMPLOYMENT_OPTIONS: ChoiceOption[] = [
@@ -81,7 +88,6 @@ const ORG_SIZE_OPTIONS: ChoiceOption[] = [
 
 export default function FoundationalQuestions() {
   const role = useRoleStore((s) => s.role);
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
   const setDriverAnswers = useOnboardingAnswersStore((s) => s.setDriverAnswers);
   const setOwnerAnswers = useOnboardingAnswersStore((s) => s.setOwnerAnswers);
   const setClientAnswers = useOnboardingAnswersStore((s) => s.setClientAnswers);
@@ -100,10 +106,10 @@ export default function FoundationalQuestions() {
   const [q2Choice, setQ2Choice] = useState<string | null>(null);
 
   // Animations
-  const contentOpacity = useRef(new Animated.Value(0)).current;
-  const contentY = useRef(new Animated.Value(20)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
-  const footerY = useRef(new Animated.Value(20)).current;
+  const contentOpacity = useMemo(() => new Animated.Value(0), []);
+  const contentY = useMemo(() => new Animated.Value(20), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
+  const footerY = useMemo(() => new Animated.Value(20), []);
 
   useFocusEffect(
     useCallback(() => {
@@ -277,46 +283,26 @@ export default function FoundationalQuestions() {
             />
           )}
 
-          {/* Choice cards */}
+          {/* Choice list */}
           {currentChoices && (
-            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-              <View style={styles.choicesList}>
-                {currentChoices.map((opt) => {
-                  const isSelected = currentSelected === opt.value;
-                  return (
-                    <Pressable
-                      key={opt.value}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setCurrentSelected(opt.value);
-                      }}
-                    >
-                      <View
-                        style={[
-                          styles.choiceCard,
-                          isSelected
-                            ? styles.choiceSelected
-                            : styles.choiceDefault,
-                        ]}
-                      >
-                        {isSelected && (
-                          <View style={styles.checkDot}>
-                            <Text style={styles.checkMark}>✓</Text>
-                          </View>
-                        )}
-                        <Text
-                          style={[
-                            styles.choiceText,
-                            isSelected && styles.choiceTextSelected,
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+              style={styles.optionsList}
+              contentContainerStyle={styles.optionsContent}
+            >
+              {currentChoices.map((opt, index) => (
+                <OnboardingOptionRow
+                  key={opt.value}
+                  title={opt.label}
+                  selected={currentSelected === opt.value}
+                  isLast={index === currentChoices.length - 1}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setCurrentSelected(opt.value);
+                  }}
+                />
+              ))}
             </ScrollView>
           )}
         </Animated.View>
@@ -361,7 +347,7 @@ function getQuestionsForRole(
       return [
         {
           question: "How many years of driving experience do you have?",
-          hint: "This helps us match you with the right opportunities.",
+          hint: "This helps us match you with opportunities that fit your experience.",
           inputType: "choices",
           options: DRIVER_EXPERIENCE_OPTIONS,
         },
@@ -472,21 +458,25 @@ const styles = StyleSheet.create({
   body: {
     flex: 1,
     marginTop: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   headline: {
     fontSize: 26,
     fontWeight: "700",
     color: "#2C3E5B",
+    textAlign: "center",
     lineHeight: 34,
-    marginBottom: 8,
   },
   subtext: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#6E7E91",
-    lineHeight: 22,
-    marginBottom: 24,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 16,
   },
   textInput: {
+    width: "100%",
     fontSize: 18,
     fontWeight: "500",
     color: "#2C3E5B",
@@ -502,61 +492,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 2,
-    marginBottom: 16,
   },
-  choicesList: {
-    gap: 12,
+  optionsList: {
+    width: "100%",
   },
-  choiceCard: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "rgba(15, 23, 42, 0.04)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  choiceSelected: {
-    borderWidth: 2,
-    borderColor: "#2C3E5B",
-    shadowColor: "rgba(44, 62, 91, 0.1)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  choiceDefault: {
-    borderWidth: 1,
-    borderColor: "#E8ECF0",
-  },
-  checkDot: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#2C3E5B",
-    alignItems: "center",
+  optionsContent: {
+    flexGrow: 1,
     justifyContent: "center",
-    zIndex: 1,
-  },
-  checkMark: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  choiceText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#6E7E91",
-    lineHeight: 22,
-  },
-  choiceTextSelected: {
-    color: "#2C3E5B",
-    fontWeight: "600",
   },
   footer: {
     gap: 12,

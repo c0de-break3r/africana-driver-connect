@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -32,7 +32,6 @@ type StatConfig = {
 
 function buildStat(
   role: string | null,
-  firstName: string,
   answers: ReturnType<typeof useOnboardingAnswersStore.getState>,
 ): StatConfig {
   switch (role) {
@@ -42,7 +41,7 @@ function buildStat(
         bigNumber: "3×",
         countUpTarget: 3,
         suffix: "×",
-        headline: `Drivers with ${exp} years experience like you, ${firstName}, get matched 3× faster on average.`,
+        headline: `Drivers with ${exp} years experience like you get matched 3× faster on average.`,
         subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#2ECC71",
         accentBg: "rgba(46, 204, 113, 0.1)",
@@ -100,7 +99,7 @@ function buildStat(
         bigNumber: "10×",
         countUpTarget: 10,
         suffix: "×",
-        headline: `${firstName}, you'll get matched faster than traditional methods.`,
+        headline: `You'll get matched faster than traditional methods.`,
         subtext: "Based on typical matching patterns across Africa.",
         accentColor: "#2C3E5B",
         accentBg: "rgba(44, 62, 91, 0.08)",
@@ -115,29 +114,25 @@ function buildStat(
 
 export default function Bombshell() {
   const role = useRoleStore((s) => s.role);
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
   const answers = useOnboardingAnswersStore();
 
-  const stat = useMemo(
-    () => buildStat(role, firstName, answers),
-    [role, firstName, answers],
-  );
+  const stat = useMemo(() => buildStat(role, answers), [role, answers]);
 
   // Animated count-up number
   const [displayNum, setDisplayNum] = useState(0);
-  const countAnim = useRef(new Animated.Value(0)).current;
+  const countAnim = useMemo(() => new Animated.Value(0), []);
 
   // Staggered animations
-  const iconOpacity = useRef(new Animated.Value(0)).current;
-  const iconScale = useRef(new Animated.Value(0.5)).current;
-  const cardOpacity = useRef(new Animated.Value(0)).current;
-  const cardScale = useRef(new Animated.Value(0.9)).current;
-  const headlineOpacity = useRef(new Animated.Value(0)).current;
-  const headlineY = useRef(new Animated.Value(15)).current;
-  const subtextOpacity = useRef(new Animated.Value(0)).current;
-  const subtextY = useRef(new Animated.Value(10)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
-  const footerY = useRef(new Animated.Value(20)).current;
+  const iconOpacity = useMemo(() => new Animated.Value(0), []);
+  const iconScale = useMemo(() => new Animated.Value(0.5), []);
+  const cardOpacity = useMemo(() => new Animated.Value(0), []);
+  const cardScale = useMemo(() => new Animated.Value(0.9), []);
+  const headlineOpacity = useMemo(() => new Animated.Value(0), []);
+  const headlineY = useMemo(() => new Animated.Value(15), []);
+  const subtextOpacity = useMemo(() => new Animated.Value(0), []);
+  const subtextY = useMemo(() => new Animated.Value(10), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
+  const footerY = useMemo(() => new Animated.Value(20), []);
 
   useFocusEffect(
     useCallback(() => {
@@ -280,7 +275,7 @@ export default function Bombshell() {
   const handleContinue = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     useOnboardingAnswersStore.getState().setLastCompletedScreen("bombshell");
-    router.push("/(onboarding)/bridge" as Href);
+    router.push("/(onboarding)/closing-reflection" as Href);
   };
 
   return (

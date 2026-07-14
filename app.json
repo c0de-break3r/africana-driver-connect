@@ -8,7 +8,12 @@
     "scheme": "africanadriverconnect",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Africana Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via MetaMap.",
+        "NSPhotoLibraryUsageDescription": "Africana Driver Connect needs photo library access so you can upload your driver's license if you prefer.",
+        "NSMicrophoneUsageDescription": "MetaMap may request microphone access during the video selfie verification step."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +23,13 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "softwareKeyboardLayoutMode": "resize"
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
+      "package": "com.codebreak3r.africanadriverconnect"
     },
     "web": {
       "output": "static",
@@ -26,8 +37,6 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store",
-      "@clerk/expo",
       [
         "expo-splash-screen",
         {
@@ -35,13 +44,18 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ],
-      "@clerk/expo",
-      "expo-secure-store"
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4f4d763b-7020-4cc6-9b5f-1d5371a3b1d9"
+      }
+    },
+    "owner": "codebreak3r"
   }
 }

@@ -1,31 +1,28 @@
-import { useAuth } from "@clerk/expo";
-import { useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/ui";
-import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 
 /**
  * Trial screen — the first screen users see after authentication.
  * This is a placeholder that will be expanded in a later prompt.
  */
 export default function Trial() {
-  const { signOut } = useAuth();
-  const firstName = useOnboardingAnswersStore((s) => s.firstName) ?? "there";
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  Animated.timing(fadeAnim, {
-    toValue: 1,
-    duration: 500,
-    useNativeDriver: true,
-  }).start();
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   return (
     <ScreenContainer>
       <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
         <Text style={styles.emoji}>🎉</Text>
-        <Text style={styles.title}>You're in, {firstName}!</Text>
+        <Text style={styles.title}>You&apos;re in!</Text>
         <Text style={styles.subtitle}>
           Your account is ready.{"\n"}The full onboarding experience{"\n"}is
           coming next.

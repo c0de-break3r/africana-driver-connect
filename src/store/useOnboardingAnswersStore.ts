@@ -5,22 +5,15 @@ import { createJSONStorage, persist } from "zustand/middleware";
 /** Ordered list of onboarding screens for progress tracking. */
 export const ONBOARDING_SCREENS = [
   "welcome",
-  "problem",
-  "solution",
-  "name",
   "role-question",
   "foundational-questions",
   "bombshell",
-  "bridge",
-  "question-bank",
   "closing-reflection",
 ] as const;
 
 export type OnboardingScreen = (typeof ONBOARDING_SCREENS)[number];
 
 type OnboardingAnswersState = {
-  /** The user's first name, null until provided. */
-  firstName: string | null;
   /** Driver: years of driving experience. */
   yearsExperience: string | null;
   /** Driver: current employment status. */
@@ -47,10 +40,6 @@ type OnboardingAnswersState = {
     | null;
   /** The furthest screen the user has completed. */
   lastCompletedScreen: OnboardingScreen | null;
-  /** Deep question-bank answers keyed by question ID (e.g. "driver_held_back"). */
-  questionBankAnswers: Record<string, string>;
-  /** Set the user's first name. */
-  setFirstName: (name: string) => void;
   /** Set driver-specific answers. */
   setDriverAnswers: (
     years: string,
@@ -77,14 +66,11 @@ type OnboardingAnswersState = {
   ) => void;
   /** Mark a screen as completed (advances progress). */
   setLastCompletedScreen: (screen: OnboardingScreen) => void;
-  /** Store a single question-bank answer. */
-  setQuestionBankAnswer: (questionId: string, answer: string) => void;
   /** Reset all onboarding answers (useful for logout / restart). */
   reset: () => void;
 };
 
 const initialState = {
-  firstName: null,
   yearsExperience: null,
   employmentStatus: null as "employed" | "looking" | "open" | null,
   vehicleCount: null,
@@ -106,19 +92,16 @@ const initialState = {
     | "trying"
     | null,
   lastCompletedScreen: null as OnboardingScreen | null,
-  questionBankAnswers: {} as Record<string, string>,
 };
 
 /**
  * Persisted store for the user's onboarding answers.
- * The name captured here is reused in headlines and reflections
  * throughout the rest of onboarding.
  */
 export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
   persist(
     (set) => ({
       ...initialState,
-      setFirstName: (firstName) => set({ firstName }),
       setDriverAnswers: (yearsExperience, employmentStatus) =>
         set({ yearsExperience, employmentStatus }),
       setOwnerAnswers: (vehicleCount, ownerPainPoint) =>
@@ -140,13 +123,6 @@ export const useOnboardingAnswersStore = create<OnboardingAnswersState>()(
           }
           return {};
         }),
-      setQuestionBankAnswer: (questionId, answer) =>
-        set((state) => ({
-          questionBankAnswers: {
-            ...state.questionBankAnswers,
-            [questionId]: answer,
-          },
-        })),
       reset: () => set(initialState),
     }),
     {
