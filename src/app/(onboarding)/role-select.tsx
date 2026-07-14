@@ -53,7 +53,7 @@ const ROLES: RoleOption[] = [
  * Matches Role Selection.html: progress bar, header, 4 cards, sticky CTA.
  *
  * On selection: stores role in Zustand (AsyncStorage-persisted),
- * then routes to (auth)/sign-up.
+ * then routes to (auth)/sign-in.
  */
 export default function RoleSelect() {
   const [selected, setSelected] = useState<UserRole | null>(null);
@@ -63,7 +63,7 @@ export default function RoleSelect() {
     if (!selected) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setRole(selected);
-    router.push("/(auth)/sign-up");
+    router.push("/(auth)/sign-in");
   };
 
   return (

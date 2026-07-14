@@ -1,7 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Link, router, type Href } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ImageSourcePropType } from "react-native";
 import {
   Animated,
@@ -18,6 +18,11 @@ import {
   ONBOARDING_SCREENS,
   useOnboardingAnswersStore,
 } from "@/store/useOnboardingAnswersStore";
+
+/** Update a timestamp ref to now (extracted to keep gesture callbacks pure). */
+function stampRef(ref: React.MutableRefObject<number>) {
+  ref.current = Date.now();
+}
 
 /**
  * Welcome carousel — 4 slides with crossfade transitions.
@@ -68,7 +73,7 @@ const SLIDES: Slide[] = [
   },
 ];
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 /** Pause auto-advance for this long after a user interaction */
 const PAUSE_DURATION = 4000;
@@ -112,19 +117,20 @@ function renderHeadline(text: string) {
 
 export default function Welcome() {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const slideOpacities = useRef(
-    SLIDES.map(() => new Animated.Value(0)),
-  ).current;
+  const slideOpacities = useMemo(
+    () => SLIDES.map(() => new Animated.Value(0)),
+    [],
+  );
 
   // ── Auto-swipe refs ──
   const isTouching = useRef(false);
-  const lastInteractionTime = useRef(Date.now());
+  const lastInteractionTime = useRef<number>(0);
 
   // ── Entrance animations (headline + subtext only) ──
-  const headlineOpacity = useRef(new Animated.Value(0)).current;
-  const headlineY = useRef(new Animated.Value(20)).current;
-  const subtextOpacity = useRef(new Animated.Value(0)).current;
-  const subtextY = useRef(new Animated.Value(15)).current;
+  const headlineOpacity = useMemo(() => new Animated.Value(0), []);
+  const headlineY = useMemo(() => new Animated.Value(20), []);
+  const subtextOpacity = useMemo(() => new Animated.Value(0), []);
+  const subtextY = useMemo(() => new Animated.Value(15), []);
 
   // ── Crossfade on slide change ──
   const prevSlideRef = useRef(0);
@@ -213,6 +219,7 @@ export default function Welcome() {
 
   // ── Auto-advance timer (loops) ──
   useEffect(() => {
+    lastInteractionTime.current = Date.now();
     const id = setInterval(() => {
       if (isTouching.current) return;
       if (Date.now() - lastInteractionTime.current < PAUSE_DURATION) return;
@@ -227,31 +234,31 @@ export default function Welcome() {
     return () => clearInterval(id);
   }, []);
 
-  const goToSlide = (index: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setCurrentSlide(index);
-    lastInteractionTime.current = Date.now();
-  };
-
   // ── Swipe gesture handler ──
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => false,
-      onMoveShouldSetPanResponder: (_, gesture) =>
-        Math.abs(gesture.dx) > 20 && Math.abs(gesture.dy) < 40,
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx < -SWIPE_THRESHOLD) {
-          // Swipe left → next
-          setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-          lastInteractionTime.current = Date.now();
-        } else if (gesture.dx > SWIPE_THRESHOLD) {
-          // Swipe right → prev
-          setCurrentSlide((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-          lastInteractionTime.current = Date.now();
-        }
-      },
-    }),
-  ).current;
+  /* eslint-disable react-hooks/refs -- PanResponder callbacks are event handlers, not render. */
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, gesture) =>
+          Math.abs(gesture.dx) > 20 && Math.abs(gesture.dy) < 40,
+        onPanResponderRelease: (_, gesture) => {
+          if (gesture.dx < -SWIPE_THRESHOLD) {
+            // Swipe left → next
+            setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+            stampRef(lastInteractionTime);
+          } else if (gesture.dx > SWIPE_THRESHOLD) {
+            // Swipe right → prev
+            setCurrentSlide(
+              (prev) => (prev - 1 + SLIDES.length) % SLIDES.length,
+            );
+            stampRef(lastInteractionTime);
+          }
+        },
+      }),
+    [],
+  );
+  /* eslint-enable react-hooks/refs */
 
   const handleLetsGo = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -342,11 +349,11 @@ const styles = StyleSheet.create({
   /* ── Hero image ── */
   imageContainer: {
     position: "absolute",
-    top: 0,
+    top: 40,
     left: 16,
     right: 16,
-    height: SCREEN_HEIGHT * 0.42,
-    paddingTop: 60,
+    height: SCREEN_HEIGHT * 0.54,
+    paddingTop: 150,
   },
   heroImage: {
     width: "100%",
@@ -357,7 +364,7 @@ const styles = StyleSheet.create({
   /* ── Text content (below image, on peach) ── */
   textContent: {
     position: "absolute",
-    top: SCREEN_HEIGHT * 0.42,
+    top: SCREEN_HEIGHT * 0.53,
     left: 0,
     right: 0,
     paddingHorizontal: 28,

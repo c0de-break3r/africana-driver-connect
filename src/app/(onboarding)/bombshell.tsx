@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
@@ -120,19 +120,19 @@ export default function Bombshell() {
 
   // Animated count-up number
   const [displayNum, setDisplayNum] = useState(0);
-  const countAnim = useRef(new Animated.Value(0)).current;
+  const countAnim = useMemo(() => new Animated.Value(0), []);
 
   // Staggered animations
-  const iconOpacity = useRef(new Animated.Value(0)).current;
-  const iconScale = useRef(new Animated.Value(0.5)).current;
-  const cardOpacity = useRef(new Animated.Value(0)).current;
-  const cardScale = useRef(new Animated.Value(0.9)).current;
-  const headlineOpacity = useRef(new Animated.Value(0)).current;
-  const headlineY = useRef(new Animated.Value(15)).current;
-  const subtextOpacity = useRef(new Animated.Value(0)).current;
-  const subtextY = useRef(new Animated.Value(10)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
-  const footerY = useRef(new Animated.Value(20)).current;
+  const iconOpacity = useMemo(() => new Animated.Value(0), []);
+  const iconScale = useMemo(() => new Animated.Value(0.5), []);
+  const cardOpacity = useMemo(() => new Animated.Value(0), []);
+  const cardScale = useMemo(() => new Animated.Value(0.9), []);
+  const headlineOpacity = useMemo(() => new Animated.Value(0), []);
+  const headlineY = useMemo(() => new Animated.Value(15), []);
+  const subtextOpacity = useMemo(() => new Animated.Value(0), []);
+  const subtextY = useMemo(() => new Animated.Value(10), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
+  const footerY = useMemo(() => new Animated.Value(20), []);
 
   useFocusEffect(
     useCallback(() => {

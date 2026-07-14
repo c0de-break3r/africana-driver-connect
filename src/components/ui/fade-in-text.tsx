@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { Animated, StyleSheet, Text } from "react-native";
 
 type FadeInTextProps = {
@@ -27,7 +27,10 @@ export function FadeInText({
   className,
   onComplete,
 }: FadeInTextProps) {
-  const opacities = useRef(lines.map(() => new Animated.Value(0))).current;
+  const opacities = useMemo(
+    () => lines.map(() => new Animated.Value(0)),
+    [lines],
+  );
 
   useEffect(() => {
     const animations = opacities.map((opacity, index) =>

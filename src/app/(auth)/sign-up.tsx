@@ -2,7 +2,7 @@ import { useSSO, useSignUp } from "@clerk/expo";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Link, router, useLocalSearchParams, type Href } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
@@ -16,6 +16,8 @@ import {
 } from "react-native";
 
 import { images } from "@/constants/images";
+import { useDriverOnboardingStore } from "@/store/useDriverOnboardingStore";
+import { useRoleStore } from "@/store/useRoleStore";
 
 /**
  * Sign-up screen — layout based on reference image:
@@ -47,6 +49,8 @@ export default function SignUp() {
     }
   };
   const { signUp } = useSignUp();
+  const role = useRoleStore((s) => s.role);
+  const driverOnboarding = useDriverOnboardingStore();
   const { startSSOFlow } = useSSO();
 
   const [email, setEmail] = useState("");
@@ -59,12 +63,12 @@ export default function SignUp() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   // Animations
-  const mascotOpacity = useRef(new Animated.Value(0)).current;
-  const mascotScale = useRef(new Animated.Value(0.85)).current;
-  const headerOpacity = useRef(new Animated.Value(0)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const formY = useRef(new Animated.Value(20)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
+  const mascotOpacity = useMemo(() => new Animated.Value(0), []);
+  const mascotScale = useMemo(() => new Animated.Value(0.85), []);
+  const headerOpacity = useMemo(() => new Animated.Value(0), []);
+  const formOpacity = useMemo(() => new Animated.Value(0), []);
+  const formY = useMemo(() => new Animated.Value(20), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
 
   // Staggered entrance
   Animated.parallel([
@@ -132,6 +136,35 @@ export default function SignUp() {
         setError(error.longMessage ?? error.message);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } else {
+        // Attach driver onboarding answers to the Clerk user so they survive login.
+        if (role === "driver" && driverOnboarding.yearsExperience) {
+          const { error: metadataError } = await signUp.update({
+            unsafeMetadata: {
+              driverOnboarding: {
+                yearsExperience: driverOnboarding.yearsExperience,
+                employmentStatus: driverOnboarding.employmentStatus,
+                driverGoal: driverOnboarding.driverGoal,
+                fullLegalName: driverOnboarding.fullLegalName,
+                dateOfBirth: driverOnboarding.dateOfBirth,
+                licenseClass: driverOnboarding.licenseClass,
+                vehicleTypes: driverOnboarding.vehicleTypes,
+                preferredJobType: driverOnboarding.preferredJobType,
+                preferredLocation: driverOnboarding.preferredLocation,
+                licenseVerificationStatus:
+                  driverOnboarding.licenseVerificationStatus,
+                licenseVerificationJobId:
+                  driverOnboarding.licenseVerificationJobId,
+              },
+            },
+          });
+          if (metadataError) {
+            console.warn(
+              "Failed to attach onboarding metadata:",
+              metadataError,
+            );
+          }
+        }
+
         const { error: sendError } = await signUp.verifications.sendEmailCode();
         if (sendError) {
           setError(sendError.longMessage ?? sendError.message);

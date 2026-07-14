@@ -1,20 +1,21 @@
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 
 import {
-  FadeInText,
-  PageDots,
-  PrimaryButton,
-  ScreenContainer,
+    FadeInText,
+    OnboardingOptionRow,
+    PageDots,
+    PrimaryButton,
+    ScreenContainer,
 } from "@/components/ui";
 import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 import { useRoleStore } from "@/store/useRoleStore";
@@ -29,7 +30,7 @@ import { useRoleStore } from "@/store/useRoleStore";
  * 2. Brief reflection mirroring those answers back
  * 3. Final closing screen with a mock bar chart + confirming stat
  *
- * Routes to (auth)/sign-up when done.
+ * Routes to (auth)/sign-in when done.
  *
  * Design reference: onboarding17–20.jpg (question cards + chart pattern).
  */
@@ -120,7 +121,7 @@ const CHART_DATA = [
 /**
  * Phase: "questions" → asking analytics questions (2 steps)
  *        "reflection" → mirror answers back
- *        "closing" → chart + confirming stat + CTA to sign-up
+ *        "closing" → chart + confirming stat + CTA to auth screen
  */
 type Phase = "questions" | "reflection" | "closing";
 
@@ -139,16 +140,16 @@ export default function ClosingReflection() {
   const [selected, setSelected] = useState<string | null>(null);
 
   // Animations
-  const contentOpacity = useRef(new Animated.Value(0)).current;
-  const contentY = useRef(new Animated.Value(20)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
-  const footerY = useRef(new Animated.Value(20)).current;
+  const contentOpacity = useMemo(() => new Animated.Value(0), []);
+  const contentY = useMemo(() => new Animated.Value(20), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
+  const footerY = useMemo(() => new Animated.Value(20), []);
   // Chart bar animations
-  const bar1Height = useRef(new Animated.Value(0)).current;
-  const bar2Height = useRef(new Animated.Value(0)).current;
-  const bar3Height = useRef(new Animated.Value(0)).current;
-  const bar4Height = useRef(new Animated.Value(0)).current;
-  const chartLabelOpacity = useRef(new Animated.Value(0)).current;
+  const bar1Height = useMemo(() => new Animated.Value(0), []);
+  const bar2Height = useMemo(() => new Animated.Value(0), []);
+  const bar3Height = useMemo(() => new Animated.Value(0), []);
+  const bar4Height = useMemo(() => new Animated.Value(0), []);
+  const chartLabelOpacity = useMemo(() => new Animated.Value(0), []);
 
   useFocusEffect(
     useCallback(() => {
@@ -406,7 +407,7 @@ export default function ClosingReflection() {
       useOnboardingAnswersStore
         .getState()
         .setLastCompletedScreen("closing-reflection");
-      router.push("/(auth)/sign-up" as Href);
+      router.push("/(auth)/sign-in" as Href);
     }
   };
 
@@ -435,7 +436,7 @@ export default function ClosingReflection() {
   /* ── Button label ── */
   const buttonLabel =
     phase === "closing"
-      ? "Create My Account"
+      ? "Continue"
       : phase === "reflection"
         ? "See Your Results"
         : "Next";
@@ -529,48 +530,29 @@ function QuestionsPhase({
   return (
     <Animated.View
       style={[
-        styles.body,
+        styles.questionBody,
         { opacity: contentOpacity, transform: [{ translateY: contentY }] },
       ]}
     >
       <Text style={styles.headline}>{question.question}</Text>
       <Text style={styles.subtext}>{question.hint}</Text>
 
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        <View style={styles.choicesList}>
-          {question.options.map((opt) => {
-            const isSelected = selected === opt.value;
-            return (
-              <Pressable key={opt.value} onPress={() => onSelect(opt.value)}>
-                <View
-                  style={[
-                    styles.choiceCard,
-                    isSelected ? styles.choiceSelected : styles.choiceDefault,
-                  ]}
-                >
-                  {isSelected && (
-                    <View style={styles.checkDot}>
-                      <Text style={styles.checkMark}>✓</Text>
-                    </View>
-                  )}
-                  <View style={styles.choiceContent}>
-                    {opt.icon && (
-                      <Text style={styles.choiceIcon}>{opt.icon}</Text>
-                    )}
-                    <Text
-                      style={[
-                        styles.choiceText,
-                        isSelected && styles.choiceTextSelected,
-                      ]}
-                    >
-                      {opt.label}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            );
-          })}
-        </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+        style={styles.optionsList}
+        contentContainerStyle={styles.optionsContent}
+      >
+        {question.options.map((opt, index) => (
+          <OnboardingOptionRow
+            key={opt.value}
+            icon={opt.icon}
+            title={opt.label}
+            selected={selected === opt.value}
+            isLast={index === question.options.length - 1}
+            onPress={() => onSelect(opt.value)}
+          />
+        ))}
       </ScrollView>
     </Animated.View>
   );
@@ -747,80 +729,32 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: 16,
   },
+  questionBody: {
+    flex: 1,
+    marginTop: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   headline: {
     fontSize: 26,
     fontWeight: "700",
     color: "#2C3E5B",
+    textAlign: "center",
     lineHeight: 34,
-    marginBottom: 8,
   },
   subtext: {
-    fontSize: 15,
+    fontSize: 14,
     color: "#6E7E91",
-    lineHeight: 22,
-    marginBottom: 24,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 16,
   },
-  choicesList: {
-    gap: 12,
+  optionsList: {
+    width: "100%",
   },
-  choiceCard: {
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 14,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "rgba(15, 23, 42, 0.04)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  choiceSelected: {
-    borderWidth: 2,
-    borderColor: "#2C3E5B",
-    shadowColor: "rgba(44, 62, 91, 0.1)",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  choiceDefault: {
-    borderWidth: 1,
-    borderColor: "#E8ECF0",
-  },
-  checkDot: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#2C3E5B",
-    alignItems: "center",
+  optionsContent: {
+    flexGrow: 1,
     justifyContent: "center",
-    zIndex: 1,
-  },
-  checkMark: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  choiceContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  choiceIcon: {
-    fontSize: 20,
-  },
-  choiceText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#6E7E91",
-    lineHeight: 22,
-  },
-  choiceTextSelected: {
-    color: "#2C3E5B",
-    fontWeight: "600",
   },
   /* Reflection phase */
   reflectionBody: {

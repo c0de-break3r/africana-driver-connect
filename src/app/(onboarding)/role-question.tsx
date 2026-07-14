@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Animated,
   Pressable,
@@ -10,44 +10,56 @@ import {
   View,
 } from "react-native";
 
-import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
+import {
+  OnboardingOptionRow,
+  PageDots,
+  PrimaryButton,
+  ScreenContainer,
+} from "@/components/ui";
 import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 import { useRoleStore, type UserRole } from "@/store/useRoleStore";
 
 /**
  * Role question screen — Act 1, Step 5.
- * Personalized headline + four struggle-based answer cards.
- * Stores the selected role in useRoleStore (AsyncStorage-persisted).
  *
- * Layout reference: onboarding card selection pattern.
+ * Layout (shared across onboarding choice screens):
+ * - Centered headline at the top
+ * - Description centered in the space between headline and options
+ * - Option list with icon, title, description, divider, and right check badge
+ * - Sticky Continue CTA disabled until a selection is made
  */
 
-type StruggleCard = {
+type RoleOption = {
   key: UserRole;
   icon: string;
-  struggle: string;
+  title: string;
+  description: string;
 };
 
-const STRUGGLES: StruggleCard[] = [
+const OPTIONS: RoleOption[] = [
   {
     key: "driver",
     icon: "🚗",
-    struggle: "I am a driver",
+    title: "I'm a Driver",
+    description: "Find driving jobs and opportunities.",
   },
   {
     key: "owner",
     icon: "🔑",
-    struggle: "I am a vehicle owner",
+    title: "I Own a Vehicle",
+    description: "Hire trusted drivers for your vehicle.",
   },
   {
     key: "client",
-    icon: "📍",
-    struggle: "I need a vehicle or a driver for an event",
+    icon: "📅",
+    title: "I Need a Driver or Vehicle",
+    description: "Book transport for an event or trip.",
   },
   {
     key: "corporate",
     icon: "🏢",
-    struggle: "I have a fleet to manage",
+    title: "I Manage a Fleet",
+    description: "Manage vehicles, drivers, and operations.",
   },
 ];
 
@@ -55,20 +67,16 @@ export default function RoleQuestion() {
   const setRole = useRoleStore((s) => s.setRole);
   const [selected, setSelected] = useState<UserRole | null>(null);
 
-  // Staggered animations
-  const headlineOpacity = useRef(new Animated.Value(0)).current;
-  const headlineY = useRef(new Animated.Value(15)).current;
-  const cardsOpacity = useRef(new Animated.Value(0)).current;
-  const cardsY = useRef(new Animated.Value(20)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
-  const footerY = useRef(new Animated.Value(20)).current;
+  // Entrance animations
+  const contentOpacity = useMemo(() => new Animated.Value(0), []);
+  const contentY = useMemo(() => new Animated.Value(20), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
+  const footerY = useMemo(() => new Animated.Value(20), []);
 
   useFocusEffect(
     useCallback(() => {
-      headlineOpacity.setValue(0);
-      headlineY.setValue(15);
-      cardsOpacity.setValue(0);
-      cardsY.setValue(20);
+      contentOpacity.setValue(0);
+      contentY.setValue(20);
       footerOpacity.setValue(0);
       footerY.setValue(20);
 
@@ -76,12 +84,12 @@ export default function RoleQuestion() {
         Animated.sequence([
           Animated.delay(100),
           Animated.parallel([
-            Animated.timing(headlineOpacity, {
+            Animated.timing(contentOpacity, {
               toValue: 1,
               duration: 450,
               useNativeDriver: true,
             }),
-            Animated.timing(headlineY, {
+            Animated.timing(contentY, {
               toValue: 0,
               duration: 450,
               useNativeDriver: true,
@@ -90,21 +98,6 @@ export default function RoleQuestion() {
         ]),
         Animated.sequence([
           Animated.delay(350),
-          Animated.parallel([
-            Animated.timing(cardsOpacity, {
-              toValue: 1,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-            Animated.timing(cardsY, {
-              toValue: 0,
-              duration: 500,
-              useNativeDriver: true,
-            }),
-          ]),
-        ]),
-        Animated.sequence([
-          Animated.delay(600),
           Animated.parallel([
             Animated.timing(footerOpacity, {
               toValue: 1,
@@ -119,14 +112,7 @@ export default function RoleQuestion() {
           ]),
         ]),
       ]).start();
-    }, [
-      headlineOpacity,
-      headlineY,
-      cardsOpacity,
-      cardsY,
-      footerOpacity,
-      footerY,
-    ]),
+    }, [contentOpacity, contentY, footerOpacity, footerY]),
   );
 
   const handleSelect = (role: UserRole) => {
@@ -144,7 +130,12 @@ export default function RoleQuestion() {
     useOnboardingAnswersStore
       .getState()
       .setLastCompletedScreen("role-question");
-    router.push("/(onboarding)/foundational-questions" as Href);
+
+    if (selected === "driver") {
+      router.push("/(onboarding)/driver/experience" as Href);
+    } else {
+      router.push("/(onboarding)/foundational-questions" as Href);
+    }
   };
 
   return (
@@ -161,68 +152,35 @@ export default function RoleQuestion() {
           <View style={{ width: 40 }} />
         </View>
 
-        {/* ── Headline ── */}
-        <Animated.View
-          style={{
-            opacity: headlineOpacity,
-            transform: [{ translateY: headlineY }],
-          }}
-        >
-          <Text style={styles.headline}>How can we help you?</Text>
-        </Animated.View>
-
-        {/* ── Struggle cards ── */}
+        {/* ── Content: headline / centered description / options ── */}
         <Animated.View
           style={[
-            styles.cardsWrap,
-            { opacity: cardsOpacity, transform: [{ translateY: cardsY }] },
+            styles.body,
+            { opacity: contentOpacity, transform: [{ translateY: contentY }] },
           ]}
         >
-          <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-            <View style={styles.cardsList}>
-              {STRUGGLES.map((card) => {
-                const isSelected = selected === card.key;
-                return (
-                  <Pressable
-                    key={card.key}
-                    onPress={() => handleSelect(card.key)}
-                  >
-                    <View
-                      style={[
-                        styles.card,
-                        isSelected ? styles.cardSelected : styles.cardDefault,
-                      ]}
-                    >
-                      {isSelected && (
-                        <View style={styles.checkBadge}>
-                          <Text style={styles.checkText}>✓</Text>
-                        </View>
-                      )}
-                      <View style={styles.cardInner}>
-                        <View
-                          style={[
-                            styles.iconBox,
-                            isSelected
-                              ? styles.iconBoxSelected
-                              : styles.iconBoxDefault,
-                          ]}
-                        >
-                          <Text style={styles.iconEmoji}>{card.icon}</Text>
-                        </View>
-                        <Text
-                          style={[
-                            styles.cardText,
-                            isSelected && styles.cardTextSelected,
-                          ]}
-                        >
-                          {card.struggle}
-                        </Text>
-                      </View>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
+          <Text style={styles.headline}>How can we help you today?</Text>
+          <Text style={styles.subtext}>
+            Choose the option that best describes what you&apos;re looking for.
+          </Text>
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            bounces={false}
+            style={styles.optionsList}
+            contentContainerStyle={styles.optionsContent}
+          >
+            {OPTIONS.map((option, index) => (
+              <OnboardingOptionRow
+                key={option.key}
+                icon={option.icon}
+                title={option.title}
+                description={option.description}
+                selected={selected === option.key}
+                isLast={index === OPTIONS.length - 1}
+                onPress={() => handleSelect(option.key)}
+              />
+            ))}
           </ScrollView>
         </Animated.View>
 
@@ -271,93 +229,32 @@ const styles = StyleSheet.create({
   dotsWrap: {
     flex: 1,
   },
+  body: {
+    flex: 1,
+    marginTop: 16,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   headline: {
     fontSize: 26,
     fontWeight: "700",
     color: "#2C3E5B",
     textAlign: "center",
     lineHeight: 34,
-    marginTop: 16,
-    marginBottom: 24,
   },
-  cardsWrap: {
-    flex: 1,
-  },
-  cardsList: {
-    gap: 14,
-    paddingBottom: 16,
-  },
-  card: {
-    padding: 18,
-    borderRadius: 16,
-    backgroundColor: "#FFFFFF",
-    shadowColor: "rgba(15, 23, 42, 0.06)",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  cardSelected: {
-    borderWidth: 2,
-    borderColor: "#2C3E5B",
-    shadowColor: "rgba(44, 62, 91, 0.12)",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 16,
-    elevation: 5,
-  },
-  cardDefault: {
-    borderWidth: 1,
-    borderColor: "#E8ECF0",
-  },
-  checkBadge: {
-    position: "absolute",
-    top: 14,
-    right: 14,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: "#2C3E5B",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  checkText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "700",
-  },
-  cardInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  iconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconBoxSelected: {
-    backgroundColor: "rgba(44, 62, 91, 0.08)",
-  },
-  iconBoxDefault: {
-    backgroundColor: "rgba(44, 62, 91, 0.04)",
-  },
-  iconEmoji: {
-    fontSize: 24,
-  },
-  cardText: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
+  subtext: {
+    fontSize: 14,
     color: "#6E7E91",
-    lineHeight: 22,
+    textAlign: "center",
+    lineHeight: 20,
+    paddingHorizontal: 16,
   },
-  cardTextSelected: {
-    color: "#2C3E5B",
-    fontWeight: "600",
+  optionsList: {
+    width: "100%",
+  },
+  optionsContent: {
+    flexGrow: 1,
+    justifyContent: "center",
   },
   footer: {
     gap: 12,

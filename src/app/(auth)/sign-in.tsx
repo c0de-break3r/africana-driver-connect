@@ -2,7 +2,7 @@ import { useSignIn, useSSO } from "@clerk/expo";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
 import { Link, router, useLocalSearchParams, type Href } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     Animated,
@@ -54,12 +54,12 @@ export default function SignIn() {
   const [googleLoading, setGoogleLoading] = useState(false);
 
   // Animations
-  const iconOpacity = useRef(new Animated.Value(0)).current;
-  const iconScale = useRef(new Animated.Value(0.85)).current;
-  const headerOpacity = useRef(new Animated.Value(0)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const formY = useRef(new Animated.Value(20)).current;
-  const footerOpacity = useRef(new Animated.Value(0)).current;
+  const iconOpacity = useMemo(() => new Animated.Value(0), []);
+  const iconScale = useMemo(() => new Animated.Value(0.85), []);
+  const headerOpacity = useMemo(() => new Animated.Value(0), []);
+  const formOpacity = useMemo(() => new Animated.Value(0), []);
+  const formY = useMemo(() => new Animated.Value(20), []);
+  const footerOpacity = useMemo(() => new Animated.Value(0), []);
 
   // Staggered entrance animation
   Animated.parallel([
@@ -229,9 +229,11 @@ export default function SignIn() {
           </View>
 
           {/* Forgot password — centered */}
-          <Pressable style={styles.forgotWrap}>
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </Pressable>
+          <Link href="/(auth)/forgot-password" asChild>
+            <Pressable style={styles.forgotWrap} hitSlop={8}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </Pressable>
+          </Link>
 
           {/* Error */}
           {error && <Text style={styles.errorText}>{error}</Text>}

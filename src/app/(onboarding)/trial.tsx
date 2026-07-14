@@ -1,5 +1,4 @@
-import { useAuth } from "@clerk/expo";
-import { useRef } from "react";
+import { useEffect, useMemo } from "react";
 import { Animated, StyleSheet, Text, View } from "react-native";
 
 import { ScreenContainer } from "@/components/ui";
@@ -9,15 +8,15 @@ import { ScreenContainer } from "@/components/ui";
  * This is a placeholder that will be expanded in a later prompt.
  */
 export default function Trial() {
-  const { signOut } = useAuth();
+  const fadeAnim = useMemo(() => new Animated.Value(0), []);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  Animated.timing(fadeAnim, {
-    toValue: 1,
-    duration: 500,
-    useNativeDriver: true,
-  }).start();
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   return (
     <ScreenContainer>
