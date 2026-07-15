@@ -22,24 +22,35 @@ const LICENSE_CLASSES: {
   description: string;
 }[] = [
   {
+    key: "A",
+    title: "Class A \u2014 Motorcycles",
+    description: "Motorcycles, mopeds, and tricycles",
+  },
+  {
     key: "B",
-    title: "Class B — Private",
-    description: "Private vehicles only",
+    title: "Class B \u2014 Private / Commercial",
+    description:
+      "Cars, pickups, minibuses (1\u201315 passengers, max 5,000 kg)",
   },
   {
     key: "C",
-    title: "Class C — Commercial passenger",
-    description: "Required for ride-hailing",
+    title: "Class C \u2014 Medium passenger",
+    description: "Coasters and buses (16\u201345 passengers)",
   },
   {
     key: "D",
-    title: "Class D — Heavy goods",
-    description: "Trucks and heavy cargo",
+    title: "Class D \u2014 Heavy passenger",
+    description: "Large buses and VIP coaches (up to 65 passengers)",
   },
   {
     key: "E",
-    title: "Class E — Agricultural & industrial",
-    description: "Specialized machinery",
+    title: "Class E \u2014 Industrial & agricultural",
+    description: "Forklifts, bulldozers, excavators, tractors",
+  },
+  {
+    key: "F",
+    title: "Class F \u2014 Heavy cargo",
+    description: "Articulated trucks, rigid vehicles, long trailers",
   },
 ];
 
@@ -48,23 +59,46 @@ export default function LicenseVerificationScreen() {
     fullLegalName,
     dateOfBirth,
     licenseClass,
+    licenseNumber,
+    licenseExpiryDate,
+    extractedIdData,
+    extractedLicenseData,
     setLicenseInfo,
+    setLicenseDetails,
     setStep,
-    setLicenseVerificationResult,
   } = useDriverOnboardingStore();
 
-  const [name, setName] = useState(fullLegalName);
-  const [dob, setDob] = useState(dateOfBirth);
+  // Auto-fill from extracted verification data if available
+  const [name, setName] = useState(
+    fullLegalName ||
+      extractedIdData?.fullName ||
+      extractedLicenseData?.fullName ||
+      "",
+  );
+  const [dob, setDob] = useState(
+    dateOfBirth ||
+      extractedIdData?.dateOfBirth ||
+      extractedLicenseData?.dateOfBirth ||
+      "",
+  );
   const [selectedClass, setSelectedClass] = useState<LicenseClass | null>(
-    licenseClass,
+    licenseClass ||
+      (extractedLicenseData?.licenseClass as LicenseClass) ||
+      null,
+  );
+  const [licNumber, setLicNumber] = useState(
+    licenseNumber || extractedLicenseData?.licenseNumber || "",
+  );
+  const [expiry, setExpiry] = useState(
+    licenseExpiryDate || extractedLicenseData?.expiryDate || "",
   );
 
   const handleContinue = () => {
     if (!name.trim() || !dob.trim() || !selectedClass) return;
     setLicenseInfo(name.trim(), dob.trim(), selectedClass);
-    setLicenseVerificationResult("in_progress");
-    setStep(4);
-    router.push("/(onboarding)/driver/license-verify" as Href);
+    setLicenseDetails(licNumber.trim(), expiry.trim());
+    setStep(8);
+    router.push("/(onboarding)/driver/vehicle" as Href);
   };
 
   const canContinue =
@@ -72,8 +106,8 @@ export default function LicenseVerificationScreen() {
 
   return (
     <DriverStepShell
-      stepIndex={3}
-      title="Let's verify who you are"
+      stepIndex={8}
+      title="Your driver's license"
       description="We'll use this to match you with the right jobs and keep everyone safe."
       buttonDisabled={!canContinue}
       onContinue={handleContinue}
@@ -106,6 +140,30 @@ export default function LicenseVerificationScreen() {
             style={styles.input}
             keyboardType="numeric"
           />
+        </View>
+
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.halfField]}>
+            <Text style={styles.label}>License number</Text>
+            <TextInput
+              value={licNumber}
+              onChangeText={setLicNumber}
+              placeholder="e.g. DVLA-123456"
+              placeholderTextColor="#A0AAB4"
+              style={styles.input}
+            />
+          </View>
+          <View style={[styles.inputGroup, styles.halfField]}>
+            <Text style={styles.label}>Expiry date</Text>
+            <TextInput
+              value={expiry}
+              onChangeText={setExpiry}
+              placeholder="DD/MM/YYYY"
+              placeholderTextColor="#A0AAB4"
+              style={styles.input}
+              keyboardType="numeric"
+            />
+          </View>
         </View>
 
         <Text style={styles.sectionLabel}>License class</Text>
@@ -141,11 +199,20 @@ export default function LicenseVerificationScreen() {
           })}
         </View>
 
+        {selectedClass === "A" && (
+          <View style={styles.warningBox}>
+            <Text style={styles.warningText}>
+              Class A is for motorcycles only. Most ride-hailing and passenger
+              jobs require Class B or higher.
+            </Text>
+          </View>
+        )}
+
         {selectedClass === "B" && (
           <View style={styles.warningBox}>
             <Text style={styles.warningText}>
-              Most jobs on Africana Driver Connect require Class C. You can
-              continue and upgrade your license later.
+              Class B covers up to 15 passengers. For larger buses or commercial
+              ride-hailing, you may need Class C.
             </Text>
           </View>
         )}
@@ -182,6 +249,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 18,
     paddingVertical: 14,
+  },
+  row: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  halfField: {
+    flex: 1,
   },
   sectionLabel: {
     fontSize: 14,

@@ -27,7 +27,14 @@ export default function CompleteProfileScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable
+          onPress={() =>
+            router.canGoBack()
+              ? router.back()
+              : router.replace("/(driver)" as Href)
+          }
+          style={styles.backBtn}
+        >
           <Text style={styles.backArrow}>‹</Text>
         </Pressable>
 

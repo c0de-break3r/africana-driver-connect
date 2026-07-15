@@ -3,18 +3,52 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 /**
- * Persisted store for the driver-specific 10-step onboarding flow.
+ * Persisted store for the driver-specific 16-step onboarding flow.
  *
- * Steps 1-7 capture onboarding answers before account creation.
- * Steps 8-9 create the Clerk account and verify it.
- * Step 10 lands on the driver dashboard with a "Complete your profile" banner
- * because license/vehicle info was captured but document photos were not.
+ * Steps 0-14 capture onboarding answers before account creation.
+ * Step 15 creates the Clerk account and verifies it via OTP.
+ *
+ * Flow:
+ * 0. Experience, 1. Employment, 2. Goals,
+ * 3. ID Capture, 4. License Capture, 5. Facial Verify, 6. Verification Review,
+ * 7. Personal Info (auto-filled), 8. License (auto-filled),
+ * 9. Vehicle Types, 10. Vehicle Details, 11. Job Type, 12. Location,
+ * 13. Safety, 14. Payout, 15. OTP
  */
 
-export type LicenseClass = "B" | "C" | "D" | "E";
+export type LicenseClass = "A" | "B" | "C" | "D" | "E" | "F";
+
+export type VehicleOwnership = "own" | "lease" | "company" | "other";
+export type PayoutMethod = "momo" | "bank";
+
+/** Extracted data from OCR processing of identity documents. */
+export type ExtractedIdData = {
+  fullName: string;
+  dateOfBirth: string;
+  nationalIdNumber: string;
+  address: string;
+};
+
+/** Extracted data from OCR processing of driver's license. */
+export type ExtractedLicenseData = {
+  fullName: string;
+  dateOfBirth: string;
+  licenseNumber: string;
+  licenseClass: string;
+  expiryDate: string;
+};
+
+/** Overall verification pipeline status. */
+export type VerificationPipelineStatus =
+  | "not_started"
+  | "capturing"
+  | "processing"
+  | "review"
+  | "confirmed"
+  | "failed";
 
 export type DriverOnboardingState = {
-  /** Current step index (0-9) for the 10-step driver flow. */
+  /** Current step index (0-15) for the 16-step driver flow. */
   currentStep: number;
 
   // Step 1 — Driving Experience
@@ -26,24 +60,76 @@ export type DriverOnboardingState = {
   // Step 3 — Driver Goals
   driverGoal: string | null;
 
-  // Step 4 — License Verification
+  // Step 3 — Identity Verification: Document Capture & Facial Verification
+  // National ID captures
+  nationalIdFrontUri: string;
+  nationalIdBackUri: string;
+  // License captures
+  licenseFrontUri: string;
+  licenseBackUri: string;
+  // Selfie capture
+  selfieUri: string;
+  // OCR extracted data
+  extractedIdData: ExtractedIdData | null;
+  extractedLicenseData: ExtractedLicenseData | null;
+  // Face match result
+  faceMatchPassed: boolean | null;
+  faceMatchConfidence: number | null;
+  // Verification pipeline
+  verificationPipelineStatus: VerificationPipelineStatus;
+  // Document type validation (was the correct document captured?)
+  nationalIdValidated: boolean | null;
+  licenseValidated: boolean | null;
+  documentStorageIds: {
+    nationalIdFront?: string;
+    nationalIdBack?: string;
+    licenseFront?: string;
+    licenseBack?: string;
+    selfie?: string;
+  };
+
+  // Step 7 — Personal Info
+  residentialAddress: string;
+  hasCriminalRecord: boolean | null;
+  criminalRecordDetails: string;
+
+  // Step 8 — License Confirmation
   fullLegalName: string;
   dateOfBirth: string;
   licenseClass: LicenseClass | null;
+  licenseNumber: string;
+  licenseExpiryDate: string;
 
-  // Step 5 — Vehicle Experience
+  // Step 10 — Vehicle Types
   vehicleTypes: string[];
 
-  // Step 6 — Preferred Job Type
+  // Step 11 — Vehicle Details
+  vehicleMake: string;
+  vehicleModel: string;
+  vehicleYear: string;
+  vehiclePlateNumber: string;
+  vehicleOwnership: VehicleOwnership | null;
+  ownerConsentObtained: boolean;
+
+  // Step 12 — Preferred Job Type
   preferredJobType: string | null;
 
-  // Step 7 — Preferred Location
+  // Step 13 — Preferred Location
   preferredLocation: string;
 
-  // License verification (MetaMap)
-  licenseVerificationStatus: "pending" | "in_progress" | "success" | "error";
-  licenseVerificationJobId: string | null;
-  licenseVerificationError: string | null;
+  // Step 14 — Safety & Compliance
+  insuranceProvider: string;
+  insurancePolicyNumber: string;
+  insuranceExpiryDate: string;
+  roadworthinessCertDate: string;
+  hasRecentViolations: boolean | null;
+  violationDetails: string;
+
+  // Step 15 — Payout
+  payoutMethod: PayoutMethod | null;
+  payoutAccountName: string;
+  payoutAccountNumber: string;
+  taxIdentificationNumber: string;
 
   // Auth / progress
   verificationMethod: "email" | "phone" | null;
@@ -54,20 +140,71 @@ export type DriverOnboardingState = {
   setExperience: (yearsExperience: string) => void;
   setEmploymentStatus: (employmentStatus: string) => void;
   setDriverGoal: (driverGoal: string) => void;
+  // Verification actions
+  setDocumentCapture: (
+    nationalIdFrontUri: string,
+    nationalIdBackUri: string,
+    licenseFrontUri: string,
+    licenseBackUri: string,
+  ) => void;
+  setSelfieCapture: (selfieUri: string) => void;
+  setExtractedData: (
+    idData: ExtractedIdData | null,
+    licenseData: ExtractedLicenseData | null,
+  ) => void;
+  setFaceMatchResult: (
+    faceMatchPassed: boolean,
+    faceMatchConfidence: number,
+  ) => void;
+  setVerificationPipelineStatus: (status: VerificationPipelineStatus) => void;
+  setNationalIdValidated: (validated: boolean | null) => void;
+  setLicenseValidated: (validated: boolean | null) => void;
+  setDocumentStorageIds: (
+    ids: Partial<{
+      nationalIdFront: string;
+      nationalIdBack: string;
+      licenseFront: string;
+      licenseBack: string;
+      selfie: string;
+    }>,
+  ) => void;
+  setPersonalInfo: (
+    residentialAddress: string,
+    hasCriminalRecord: boolean,
+    criminalRecordDetails: string,
+  ) => void;
   setLicenseInfo: (
     fullLegalName: string,
     dateOfBirth: string,
     licenseClass: LicenseClass,
   ) => void;
+  setLicenseDetails: (licenseNumber: string, licenseExpiryDate: string) => void;
+  setVehicleDetails: (
+    vehicleMake: string,
+    vehicleModel: string,
+    vehicleYear: string,
+    vehiclePlateNumber: string,
+    vehicleOwnership: VehicleOwnership,
+    ownerConsentObtained: boolean,
+  ) => void;
   toggleVehicleType: (vehicleType: string) => void;
   setPreferredJobType: (preferredJobType: string) => void;
   setPreferredLocation: (preferredLocation: string) => void;
-  setVerificationMethod: (method: "email" | "phone") => void;
-  setLicenseVerificationResult: (
-    status: "pending" | "in_progress" | "success" | "error",
-    jobId?: string | null,
-    error?: string | null,
+  setSafetyInfo: (
+    insuranceProvider: string,
+    insurancePolicyNumber: string,
+    insuranceExpiryDate: string,
+    roadworthinessCertDate: string,
+    hasRecentViolations: boolean,
+    violationDetails: string,
   ) => void;
+  setPayoutInfo: (
+    payoutMethod: PayoutMethod,
+    payoutAccountName: string,
+    payoutAccountNumber: string,
+    taxIdentificationNumber: string,
+  ) => void;
+  setVerificationMethod: (method: "email" | "phone") => void;
   markOnboardingComplete: () => void;
   markProfileDocumentsUploaded: () => void;
   reset: () => void;
@@ -81,16 +218,49 @@ const initialState = {
   fullLegalName: "",
   dateOfBirth: "",
   licenseClass: null as LicenseClass | null,
+  licenseNumber: "",
+  licenseExpiryDate: "",
+  nationalIdFrontUri: "",
+  nationalIdBackUri: "",
+  licenseFrontUri: "",
+  licenseBackUri: "",
+  selfieUri: "",
+  extractedIdData: null as ExtractedIdData | null,
+  extractedLicenseData: null as ExtractedLicenseData | null,
+  faceMatchPassed: null as boolean | null,
+  faceMatchConfidence: null as number | null,
+  verificationPipelineStatus: "not_started" as VerificationPipelineStatus,
+  nationalIdValidated: null as boolean | null,
+  licenseValidated: null as boolean | null,
+  documentStorageIds: {} as {
+    nationalIdFront?: string;
+    nationalIdBack?: string;
+    licenseFront?: string;
+    licenseBack?: string;
+    selfie?: string;
+  },
+  residentialAddress: "",
+  hasCriminalRecord: null as boolean | null,
+  criminalRecordDetails: "",
   vehicleTypes: [] as string[],
+  vehicleMake: "",
+  vehicleModel: "",
+  vehicleYear: "",
+  vehiclePlateNumber: "",
+  vehicleOwnership: null as VehicleOwnership | null,
+  ownerConsentObtained: false,
   preferredJobType: null,
   preferredLocation: "",
-  licenseVerificationStatus: "pending" as
-    | "pending"
-    | "in_progress"
-    | "success"
-    | "error",
-  licenseVerificationJobId: null as string | null,
-  licenseVerificationError: null as string | null,
+  insuranceProvider: "",
+  insurancePolicyNumber: "",
+  insuranceExpiryDate: "",
+  roadworthinessCertDate: "",
+  hasRecentViolations: null as boolean | null,
+  violationDetails: "",
+  payoutMethod: null as PayoutMethod | null,
+  payoutAccountName: "",
+  payoutAccountNumber: "",
+  taxIdentificationNumber: "",
   verificationMethod: null as "email" | "phone" | null,
   onboardingComplete: false,
   profileDocumentsUploaded: false,
@@ -101,11 +271,61 @@ export const useDriverOnboardingStore = create<DriverOnboardingState>()(
     (set) => ({
       ...initialState,
       setStep: (currentStep) => set({ currentStep }),
+      setDocumentCapture: (
+        nationalIdFrontUri,
+        nationalIdBackUri,
+        licenseFrontUri,
+        licenseBackUri,
+      ) =>
+        set({
+          nationalIdFrontUri,
+          nationalIdBackUri,
+          licenseFrontUri,
+          licenseBackUri,
+        }),
+      setSelfieCapture: (selfieUri) => set({ selfieUri }),
+      setExtractedData: (extractedIdData, extractedLicenseData) =>
+        set({ extractedIdData, extractedLicenseData }),
+      setFaceMatchResult: (faceMatchPassed, faceMatchConfidence) =>
+        set({ faceMatchPassed, faceMatchConfidence }),
+      setVerificationPipelineStatus: (verificationPipelineStatus) =>
+        set({ verificationPipelineStatus }),
+      setNationalIdValidated: (nationalIdValidated) =>
+        set({ nationalIdValidated }),
+      setLicenseValidated: (licenseValidated) => set({ licenseValidated }),
+      setDocumentStorageIds: (ids) =>
+        set((state) => ({
+          documentStorageIds: { ...state.documentStorageIds, ...ids },
+        })),
       setExperience: (yearsExperience) => set({ yearsExperience }),
       setEmploymentStatus: (employmentStatus) => set({ employmentStatus }),
       setDriverGoal: (driverGoal) => set({ driverGoal }),
+      setPersonalInfo: (
+        residentialAddress,
+        hasCriminalRecord,
+        criminalRecordDetails,
+      ) =>
+        set({ residentialAddress, hasCriminalRecord, criminalRecordDetails }),
       setLicenseInfo: (fullLegalName, dateOfBirth, licenseClass) =>
         set({ fullLegalName, dateOfBirth, licenseClass }),
+      setLicenseDetails: (licenseNumber, licenseExpiryDate) =>
+        set({ licenseNumber, licenseExpiryDate }),
+      setVehicleDetails: (
+        vehicleMake,
+        vehicleModel,
+        vehicleYear,
+        vehiclePlateNumber,
+        vehicleOwnership,
+        ownerConsentObtained,
+      ) =>
+        set({
+          vehicleMake,
+          vehicleModel,
+          vehicleYear,
+          vehiclePlateNumber,
+          vehicleOwnership,
+          ownerConsentObtained,
+        }),
       toggleVehicleType: (vehicleType) =>
         set((state) => {
           const exists = state.vehicleTypes.includes(vehicleType);
@@ -117,20 +337,38 @@ export const useDriverOnboardingStore = create<DriverOnboardingState>()(
         }),
       setPreferredJobType: (preferredJobType) => set({ preferredJobType }),
       setPreferredLocation: (preferredLocation) => set({ preferredLocation }),
-      setVerificationMethod: (verificationMethod) =>
-        set({ verificationMethod }),
-      setLicenseVerificationResult: (
-        licenseVerificationStatus,
-        licenseVerificationJobId = null,
-        licenseVerificationError = null,
+      setSafetyInfo: (
+        insuranceProvider,
+        insurancePolicyNumber,
+        insuranceExpiryDate,
+        roadworthinessCertDate,
+        hasRecentViolations,
+        violationDetails,
       ) =>
         set({
-          licenseVerificationStatus,
-          licenseVerificationJobId,
-          licenseVerificationError,
+          insuranceProvider,
+          insurancePolicyNumber,
+          insuranceExpiryDate,
+          roadworthinessCertDate,
+          hasRecentViolations,
+          violationDetails,
         }),
+      setPayoutInfo: (
+        payoutMethod,
+        payoutAccountName,
+        payoutAccountNumber,
+        taxIdentificationNumber,
+      ) =>
+        set({
+          payoutMethod,
+          payoutAccountName,
+          payoutAccountNumber,
+          taxIdentificationNumber,
+        }),
+      setVerificationMethod: (verificationMethod) =>
+        set({ verificationMethod }),
       markOnboardingComplete: () =>
-        set({ onboardingComplete: true, currentStep: 9 }),
+        set({ onboardingComplete: true, currentStep: 15 }),
       markProfileDocumentsUploaded: () =>
         set({ profileDocumentsUploaded: true }),
       reset: () => set(initialState),

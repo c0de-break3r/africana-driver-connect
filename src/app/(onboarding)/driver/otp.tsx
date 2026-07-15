@@ -79,7 +79,7 @@ export default function DriverOtpScreen() {
 
   return (
     <DriverStepShell
-      stepIndex={8}
+      stepIndex={15}
       title="Enter verification code"
       description={`We sent a 6-digit code to your ${verificationMethod === "phone" ? "phone" : "email"}.`}
       buttonDisabled={!canContinue || isLoading}

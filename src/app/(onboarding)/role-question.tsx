@@ -2,19 +2,19 @@ import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
+    Animated,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
 } from "react-native";
 
 import {
-  OnboardingOptionRow,
-  PageDots,
-  PrimaryButton,
-  ScreenContainer,
+    OnboardingOptionRow,
+    PageDots,
+    PrimaryButton,
+    ScreenContainer,
 } from "@/components/ui";
 import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 import { useRoleStore, type UserRole } from "@/store/useRoleStore";
@@ -143,7 +143,14 @@ export default function RoleQuestion() {
       <View style={styles.screen}>
         {/* ── Top bar: back + dots ── */}
         <View style={styles.topBar}>
-          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Pressable
+            onPress={() =>
+              router.canGoBack()
+                ? router.back()
+                : router.replace("/(onboarding)/welcome" as Href)
+            }
+            style={styles.backBtn}
+          >
             <Text style={styles.backArrow}>‹</Text>
           </Pressable>
           <View style={styles.dotsWrap}>

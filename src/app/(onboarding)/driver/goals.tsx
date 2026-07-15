@@ -23,7 +23,7 @@ export default function DriverGoalsScreen() {
   const handleContinue = () => {
     if (!driverGoal) return;
     setStep(3);
-    router.push("/(onboarding)/driver/license" as Href);
+    router.push("/(onboarding)/driver/id-capture" as Href);
   };
 
   return (

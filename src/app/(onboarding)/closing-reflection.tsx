@@ -427,7 +427,9 @@ export default function ClosingReflection() {
       animateTransition();
       return;
     }
-    router.back();
+    router.canGoBack()
+      ? router.back()
+      : router.replace("/(onboarding)/welcome" as Href);
   };
 
   /* ── Can continue? ── */

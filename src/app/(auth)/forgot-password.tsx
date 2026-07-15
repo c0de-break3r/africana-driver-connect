@@ -1,188 +1,41 @@
-import { useSignIn } from "@clerk/expo";
-import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { Link, router, type Href } from "expo-router";
-import { useMemo, useState } from "react";
+import { router, type Href } from "expo-router";
 import {
     ActivityIndicator,
     Animated,
-    Platform,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     View,
 } from "react-native";
 
+import { AuthBackButton, AuthFooter, AuthInput } from "@/components/ui";
 import { images } from "@/constants/images";
+import { usePasswordReset } from "@/hooks/usePasswordReset";
+import { useStaggeredEntrance } from "@/hooks/useStaggeredEntrance";
 
-type Phase = "email" | "code" | "password" | "success";
-
+/**
+ * Forgot-password screen — thin composition of shared auth components + hooks.
+ *
+ * 4-phase flow: email → verification code → new password → success.
+ * Business logic lives in `usePasswordReset`.
+ * Entrance animation lives in `useStaggeredEntrance`.
+ */
 export default function ForgotPassword() {
-  const { signIn, fetchStatus } = useSignIn();
-
-  const [phase, setPhase] = useState<Phase>("email");
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const isFetching = fetchStatus === "fetching";
-
-  const headerOpacity = useMemo(() => new Animated.Value(0), []);
-  const formOpacity = useMemo(() => new Animated.Value(0), []);
-  const formY = useMemo(() => new Animated.Value(20), []);
-
-  useMemo(() => {
-    Animated.parallel([
-      Animated.timing(headerOpacity, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.sequence([
-        Animated.delay(150),
-        Animated.parallel([
-          Animated.timing(formOpacity, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(formY, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-        ]),
-      ]),
-    ]).start();
-  }, [headerOpacity, formOpacity, formY]);
-
-  const handleSendCode = async () => {
-    if (!email.trim()) return;
-    setError(null);
-
-    const { error: createError } = await signIn.create({
-      identifier: email.trim(),
-    });
-
-    if (createError) {
-      setError(createError.longMessage ?? createError.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
-
-    const { error: sendError } = await signIn.resetPasswordEmailCode.sendCode();
-
-    if (sendError) {
-      setError(sendError.longMessage ?? sendError.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPhase("code");
-  };
-
-  const handleVerifyCode = async () => {
-    if (!code.trim()) return;
-    setError(null);
-
-    const { error: verifyError } =
-      await signIn.resetPasswordEmailCode.verifyCode({
-        code: code.trim(),
-      });
-
-    if (verifyError) {
-      setError(verifyError.longMessage ?? verifyError.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setPhase("password");
-  };
-
-  const handleResetPassword = async () => {
-    if (!password) return;
-    setError(null);
-
-    const { error: resetError } =
-      await signIn.resetPasswordEmailCode.submitPassword({
-        password,
-        signOutOfOtherSessions: true,
-      });
-
-    if (resetError) {
-      setError(resetError.longMessage ?? resetError.message);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
-
-    if (signIn.status === "complete") {
-      const { error: finalizeError } = await signIn.finalize({
-        navigate: ({ session }) => {
-          if (session?.currentTask) {
-            return;
-          }
-          router.replace("/(onboarding)/trial" as Href);
-        },
-      });
-
-      if (finalizeError) {
-        setError(finalizeError.longMessage ?? finalizeError.message);
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        return;
-      }
-    } else {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setPhase("success");
-    }
-  };
-
-  const getTitle = () => {
-    switch (phase) {
-      case "email":
-        return "Reset your password";
-      case "code":
-        return "Enter verification code";
-      case "password":
-        return "Create new password";
-      case "success":
-        return "Password updated";
-    }
-  };
-
-  const getSubtitle = () => {
-    switch (phase) {
-      case "email":
-        return "Enter your email and we'll send you a reset code.";
-      case "code":
-        return `We sent a 6-digit code to ${email}.`;
-      case "password":
-        return "Choose a strong new password for your account.";
-      case "success":
-        return "Your password has been reset. Sign in to continue.";
-    }
-  };
+  const entrance = useStaggeredEntrance();
+  const reset = usePasswordReset();
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF8F3" }}>
       {/* ── Back button ── */}
-      <Animated.View style={[styles.backBtnWrap, { opacity: headerOpacity }]}>
-        <Pressable
-          style={styles.backBtn}
-          onPress={() => {
-            if (router.canGoBack()) router.back();
-            else router.replace("/(auth)/sign-in" as Href);
-          }}
-          hitSlop={12}
-        >
-          <Text style={styles.backBtnText}>{"‹"}</Text>
-        </Pressable>
-      </Animated.View>
+      <AuthBackButton
+        opacity={entrance.headerOpacity}
+        goBack={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace("/(auth)/sign-in" as Href);
+        }}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -190,7 +43,9 @@ export default function ForgotPassword() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── App Icon ── */}
-        <Animated.View style={[styles.iconWrap, { opacity: headerOpacity }]}>
+        <Animated.View
+          style={[styles.iconWrap, { opacity: entrance.headerOpacity }]}
+        >
           <Image
             source={images.appIcon}
             style={styles.iconImage}
@@ -202,57 +57,51 @@ export default function ForgotPassword() {
         <Animated.View
           style={[
             styles.headlineWrap,
-            { opacity: formOpacity, transform: [{ translateY: formY }] },
+            {
+              opacity: entrance.formOpacity,
+              transform: [{ translateY: entrance.formTranslateY }],
+            },
           ]}
         >
-          <Text style={styles.title}>{getTitle()}</Text>
-          <Text style={styles.subtitle}>{getSubtitle()}</Text>
+          <Text style={styles.title}>{reset.getTitle()}</Text>
+          <Text style={styles.subtitle}>{reset.getSubtitle()}</Text>
         </Animated.View>
 
         {/* ── Form ── */}
         <Animated.View
           style={[
             styles.form,
-            { opacity: formOpacity, transform: [{ translateY: formY }] },
+            {
+              opacity: entrance.formOpacity,
+              transform: [{ translateY: entrance.formTranslateY }],
+            },
           ]}
         >
-          {phase === "email" && (
-            <>
-              <Text style={styles.label}>Email</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Email"
-                  placeholderTextColor="#A0AAB4"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  autoCorrect={false}
-                  editable={!isFetching}
-                />
-              </View>
-            </>
+          {reset.phase === "email" && (
+            <AuthInput
+              label="Email"
+              value={reset.email}
+              onChangeText={reset.setEmail}
+              placeholder="Email"
+              keyboardType="email-address"
+              editable={!reset.isFetching}
+            />
           )}
 
-          {phase === "code" && (
+          {reset.phase === "code" && (
             <>
-              <Text style={styles.label}>Verification code</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={code}
-                  onChangeText={setCode}
-                  placeholder="123456"
-                  placeholderTextColor="#A0AAB4"
-                  keyboardType="number-pad"
-                  maxLength={6}
-                  editable={!isFetching}
-                />
-              </View>
+              <AuthInput
+                label="Verification code"
+                value={reset.code}
+                onChangeText={reset.setCode}
+                placeholder="123456"
+                keyboardType="number-pad"
+                maxLength={6}
+                editable={!reset.isFetching}
+              />
               <Pressable
-                onPress={handleSendCode}
-                disabled={isFetching}
+                onPress={reset.handleResendCode}
+                disabled={reset.isFetching}
                 hitSlop={8}
               >
                 <Text style={styles.resendText}>Resend code</Text>
@@ -260,70 +109,41 @@ export default function ForgotPassword() {
             </>
           )}
 
-          {phase === "password" && (
-            <>
-              <Text style={styles.label}>New password</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="New password"
-                  placeholderTextColor="#A0AAB4"
-                  secureTextEntry={!showPassword}
-                  editable={!isFetching}
-                />
-                <Pressable
-                  onPress={() => setShowPassword(!showPassword)}
-                  hitSlop={8}
-                >
-                  <Text style={styles.eyeIcon}>{showPassword ? "◉" : "◎"}</Text>
-                </Pressable>
-              </View>
-            </>
+          {reset.phase === "password" && (
+            <AuthInput
+              label="New password"
+              value={reset.password}
+              onChangeText={reset.setPassword}
+              placeholder="New password"
+              secure
+              editable={!reset.isFetching}
+            />
           )}
 
-          {error && <Text style={styles.errorText}>{error}</Text>}
+          {reset.error && <Text style={styles.errorText}>{reset.error}</Text>}
 
-          {phase !== "success" && (
+          {reset.phase !== "success" && (
             <View style={styles.buttonSpacer}>
-              {isFetching ? (
+              {reset.isFetching ? (
                 <ActivityIndicator size="large" color="#2C3E5B" />
               ) : (
                 <Pressable
                   style={[
                     styles.primaryBtn,
-                    ((phase === "email" && !email.trim()) ||
-                      (phase === "code" && !code.trim()) ||
-                      (phase === "password" && !password)) &&
-                      styles.primaryBtnDisabled,
+                    reset.isActionDisabled && styles.primaryBtnDisabled,
                   ]}
-                  onPress={
-                    phase === "email"
-                      ? handleSendCode
-                      : phase === "code"
-                        ? handleVerifyCode
-                        : handleResetPassword
-                  }
-                  disabled={
-                    (phase === "email" && !email.trim()) ||
-                    (phase === "code" && !code.trim()) ||
-                    (phase === "password" && !password)
-                  }
+                  onPress={reset.handleAction}
+                  disabled={reset.isActionDisabled}
                 >
                   <Text style={styles.primaryBtnText}>
-                    {phase === "email"
-                      ? "Send reset code"
-                      : phase === "code"
-                        ? "Verify code"
-                        : "Reset password"}
+                    {reset.getButtonLabel()}
                   </Text>
                 </Pressable>
               )}
             </View>
           )}
 
-          {phase === "success" && (
+          {reset.phase === "success" && (
             <View style={styles.buttonSpacer}>
               <Pressable
                 style={styles.primaryBtn}
@@ -336,13 +156,8 @@ export default function ForgotPassword() {
         </Animated.View>
 
         {/* ── Footer ── */}
-        <Animated.View style={[styles.footerWrap, { opacity: formOpacity }]}>
-          <Text style={styles.footerText}>Remember your password? </Text>
-          <Link href="/(auth)/sign-in" asChild>
-            <Pressable hitSlop={8}>
-              <Text style={styles.footerLink}>Sign in</Text>
-            </Pressable>
-          </Link>
+        <Animated.View style={{ opacity: entrance.formOpacity }}>
+          <AuthFooter variant="forgot-password-link" />
         </Animated.View>
       </ScrollView>
     </View>
@@ -354,23 +169,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 60,
     paddingBottom: 40,
-  },
-  backBtnWrap: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 56 : 40,
-    left: 16,
-    zIndex: 10,
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backBtnText: {
-    fontSize: 24,
-    fontWeight: "300",
-    color: "#2C3E5B",
   },
   iconWrap: {
     alignItems: "center",
@@ -400,34 +198,6 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: 28,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#A0AAB4",
-    marginBottom: 8,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF8F3",
-    borderWidth: 1,
-    borderColor: "#E0E5EA",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#2C3E5B",
-    paddingVertical: Platform.OS === "ios" ? 14 : 12,
-  },
-  eyeIcon: {
-    fontSize: 18,
-    marginLeft: 8,
-    color: "#6E7E91",
   },
   resendText: {
     fontSize: 13,
@@ -460,20 +230,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: "#FFFFFF",
-  },
-  footerWrap: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 24,
-  },
-  footerText: {
-    fontSize: 14,
-    color: "#A0AAB4",
-  },
-  footerLink: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#2C3E5B",
   },
 });

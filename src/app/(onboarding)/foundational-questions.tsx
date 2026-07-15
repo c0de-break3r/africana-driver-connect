@@ -2,20 +2,20 @@ import * as Haptics from "expo-haptics";
 import { router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import {
-  Animated,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
+    Animated,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
 } from "react-native";
 
 import {
-  OnboardingOptionRow,
-  PageDots,
-  PrimaryButton,
-  ScreenContainer,
+    OnboardingOptionRow,
+    PageDots,
+    PrimaryButton,
+    ScreenContainer,
 } from "@/components/ui";
 import { useOnboardingAnswersStore } from "@/store/useOnboardingAnswersStore";
 import { useRoleStore } from "@/store/useRoleStore";
@@ -245,7 +245,9 @@ export default function FoundationalQuestions() {
                 setStep(0);
                 animateStepTransition();
               } else {
-                router.back();
+                router.canGoBack()
+                  ? router.back()
+                  : router.replace("/(onboarding)/welcome" as Href);
               }
             }}
             style={styles.backBtn}

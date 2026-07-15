@@ -1,3 +1,7 @@
+export { AuthBackButton } from "./auth-back-button";
+export { AuthFooter } from "./auth-footer";
+export { AuthInput } from "./auth-input";
+export { AuthSocialButtons } from "./auth-social-buttons";
 export { Card } from "./card";
 export { FadeInText } from "./fade-in-text";
 export { OnboardingOptionRow } from "./onboarding-option-row";
