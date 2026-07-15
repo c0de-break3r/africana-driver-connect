@@ -57,13 +57,13 @@ export default function PreferredLocationScreen() {
   const handleContinue = () => {
     if (!location.trim()) return;
     setPreferredLocation(location.trim());
-    setStep(7);
-    router.push("/(auth)/sign-up" as Href);
+    setStep(12);
+    router.push("/(onboarding)/driver/safety" as Href);
   };
 
   return (
     <DriverStepShell
-      stepIndex={6}
+      stepIndex={12}
       title="Where do you want to work?"
       description="Set your preferred work area so we can show nearby opportunities."
       buttonDisabled={!location.trim()}

@@ -72,19 +72,8 @@ export default function RoleSelect() {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Progress bar ── */}
-        <View className="px-6 pt-2">
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: "25%" }]} />
-          </View>
-          <View className="flex-row justify-between items-center mt-2">
-            <Text style={styles.progressLabel}>STEP 1 OF 4</Text>
-            <Text style={styles.progressHighlight}>Role Selection</Text>
-          </View>
-        </View>
-
         {/* ── Header ── */}
-        <View className="px-6 pt-8 pb-4">
+        <View className="px-6 pt-6 pb-4">
           <Text className="text-2xl font-bold text-foreground">
             Choose Your Role
           </Text>

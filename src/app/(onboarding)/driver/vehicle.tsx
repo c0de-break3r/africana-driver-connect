@@ -28,13 +28,13 @@ export default function VehicleExperienceScreen() {
 
   const handleContinue = () => {
     if (vehicleTypes.length === 0) return;
-    setStep(5);
-    router.push("/(onboarding)/driver/job-type" as Href);
+    setStep(9);
+    router.push("/(onboarding)/driver/vehicle-details" as Href);
   };
 
   return (
     <DriverStepShell
-      stepIndex={4}
+      stepIndex={9}
       title="What vehicle types can you drive?"
       description="Select all that apply. This helps us recommend the right jobs."
       buttonDisabled={vehicleTypes.length === 0}

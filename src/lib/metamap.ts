@@ -1,4 +1,24 @@
+import { NativeModules } from "react-native";
 import * as MetaMapModule from "react-native-metamap-sdk";
+
+/**
+ * Patch the MetaMap native module to silence React Native warnings about
+ * missing `addListener` / `removeListeners` methods. These are required by
+ * `NativeEventEmitter` but the MetaMap SDK does not implement them.
+ * The events themselves still work correctly via the native bridge.
+ */
+function patchMetaMapModule(): void {
+  const mod = NativeModules.MetaMapRNSdk;
+  if (!mod) return;
+  if (typeof mod.addListener !== "function") {
+    mod.addListener = () => {};
+  }
+  if (typeof mod.removeListeners !== "function") {
+    mod.removeListeners = () => {};
+  }
+}
+
+patchMetaMapModule();
 
 /**
  * Shape of the object returned by MetaMap on verificationSuccess.
@@ -37,7 +57,21 @@ export function isMetaMapAvailable(): boolean {
 }
 
 /**
- * Launch the MetaMap verification flow.
+ * Default theming metadata that matches the Africana Driver Connect design system.
+ * MetaMap's SDK supports: buttonColor, buttonTextColor, fixedLanguage, and
+ * custom fonts (regularFont, boldFont).
+ */
+const METAMAP_THEME: Record<string, string> = {
+  // Navy primary button (matches --color-primary: #2C3E5B)
+  buttonColor: "#2C3E5B",
+  // White text on navy button
+  buttonTextColor: "#FFFFFF",
+  // English language
+  fixedLanguage: "en",
+};
+
+/**
+ * Launch the MetaMap verification flow themed to match the app design.
  *
  * The user's driver's license scan and selfie/liveness check are handled by
  * MetaMap's prebuilt native UI. Results are delivered via the NativeEventEmitter
@@ -73,6 +107,12 @@ export function showMetaMapVerification(
     return false;
   }
 
-  sdk.showFlow(clientId, flowId ?? null, metadata ?? null);
+  // Merge app theme with any caller-provided metadata.
+  const mergedMetadata: Record<string, string> = {
+    ...METAMAP_THEME,
+    ...metadata,
+  };
+
+  sdk.showFlow(clientId, flowId ?? null, mergedMetadata);
   return true;
 }

@@ -1,0 +1,128 @@
+import { Ionicons } from "@expo/vector-icons";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+/**
+ * Driver Jobs tab — browse and filter available driving opportunities.
+ *
+ * Placeholder: shows filter chips and an empty state. Real job data
+ * will be connected in a later task.
+ */
+export default function JobsTab() {
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        {/* Header */}
+        <Text style={styles.title}>Jobs</Text>
+        <Text style={styles.subtitle}>
+          Browse driving opportunities matched to your profile.
+        </Text>
+
+        {/* Filter chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsRow}
+          style={styles.chipsScroll}
+        >
+          {FILTERS.map((label) => (
+            <View key={label} style={styles.chip}>
+              <Text style={styles.chipText}>{label}</Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Empty state */}
+        <View style={styles.emptyState}>
+          <Ionicons
+            name="briefcase-outline"
+            size={40}
+            color="#6E7E91"
+            style={{ marginBottom: 12 }}
+          />
+          <Text style={styles.emptyTitle}>No jobs yet</Text>
+          <Text style={styles.emptyBody}>
+            Complete your profile to start seeing matched opportunities.
+          </Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const FILTERS = [
+  "All Jobs",
+  "Full-time",
+  "Part-time",
+  "Contract",
+  "Event Driving",
+  "Delivery",
+  "Chauffeur",
+];
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF8F3",
+  },
+  content: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#2C3E5B",
+    lineHeight: 36,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: "#6E7E91",
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  chipsScroll: {
+    marginBottom: 24,
+  },
+  chipsRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  chip: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8ECF0",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  chipText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#2C3E5B",
+  },
+  emptyState: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 32,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E8ECF0",
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#2C3E5B",
+    marginBottom: 6,
+  },
+  emptyBody: {
+    fontSize: 14,
+    color: "#6E7E91",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+});

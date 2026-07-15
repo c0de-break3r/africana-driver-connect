@@ -6,7 +6,7 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
 
 export type DriverStepShellProps = {
-  /** 0-based step index in the 10-step driver flow. */
+  /** 0-based step index in the 16-step driver flow. */
   stepIndex: number;
   /** Screen title. */
   title: string;
@@ -24,7 +24,7 @@ export type DriverStepShellProps = {
   children: React.ReactNode;
 };
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 16;
 
 /**
  * Shared shell for the driver onboarding steps.
