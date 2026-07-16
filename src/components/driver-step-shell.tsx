@@ -6,12 +6,14 @@ import { Animated, Pressable, StyleSheet, Text, View } from "react-native";
 import { PageDots, PrimaryButton, ScreenContainer } from "@/components/ui";
 
 export type DriverStepShellProps = {
-  /** 0-based step index in the 16-step driver flow. */
+  /** 0-based step index in the 14-step driver flow. */
   stepIndex: number;
   /** Screen title. */
   title: string;
   /** Short explanatory sentence (centered between title and children). */
   description: string;
+  /** Optional additional styles for the description text. */
+  descriptionStyle?: object;
   /** Primary CTA label. */
   buttonTitle?: string;
   /** Whether the primary button is disabled. */
@@ -36,6 +38,7 @@ export function DriverStepShell({
   stepIndex,
   title,
   description,
+  descriptionStyle,
   buttonTitle = "Continue",
   buttonDisabled = false,
   onContinue,
@@ -128,7 +131,7 @@ export function DriverStepShell({
           ]}
         >
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={[styles.description, descriptionStyle]}>{description}</Text>
           <View style={styles.bodyContent}>{children}</View>
         </Animated.View>
 
@@ -201,6 +204,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
     paddingHorizontal: 16,
+    marginTop: 12,
   },
   footer: {
     gap: 12,

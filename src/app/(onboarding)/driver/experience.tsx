@@ -23,17 +23,18 @@ export default function DrivingExperienceScreen() {
 
   const handleContinue = () => {
     if (!yearsExperience) return;
-    setStep(1);
-    router.push("/(onboarding)/driver/employment" as Href);
+    setStep(2);
+    router.push("/(onboarding)/driver/qualification-pre-check" as Href);
   };
 
   return (
     <DriverStepShell
-      stepIndex={0}
+      stepIndex={2}
       title="How many years of driving experience do you have?"
       description="This helps us match you with opportunities that fit your experience."
       buttonDisabled={!yearsExperience}
       onContinue={handleContinue}
+      descriptionStyle={{ marginTop: 16 }}
     >
       {OPTIONS.map((option, index) => (
         <OnboardingOptionRow

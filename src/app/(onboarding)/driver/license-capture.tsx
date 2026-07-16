@@ -52,7 +52,7 @@ export default function LicenseCaptureScreen() {
   if (!CameraView || !useCameraPermissions) {
     return (
       <DriverStepShell
-        stepIndex={4}
+        stepIndex={3}
         title="Scan your driver's license"
         description="We need the front and back of your DVLA license to verify your driving credentials."
         buttonTitle="Skip & Continue"
@@ -257,7 +257,7 @@ function CameraLicenseCapture({
   if (phase === "validating") {
     return (
       <DriverStepShell
-        stepIndex={4}
+        stepIndex={3}
         title="Verifying document"
         description="Checking that the captured image is a valid driver's license..."
         buttonTitle=""
@@ -327,7 +327,7 @@ function CameraLicenseCapture({
   if (phase === "preview") {
     return (
       <DriverStepShell
-        stepIndex={4}
+        stepIndex={3}
         title="Review your license"
         description="Make sure both sides are clear and readable."
         buttonTitle="Looks Good — Continue"

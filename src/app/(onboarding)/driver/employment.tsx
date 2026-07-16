@@ -28,7 +28,7 @@ export default function EmploymentStatusScreen() {
 
   return (
     <DriverStepShell
-      stepIndex={1}
+      stepIndex={3}
       title="What's your current employment status?"
       description="We'll tailor the opportunities we show you."
       buttonDisabled={!employmentStatus}

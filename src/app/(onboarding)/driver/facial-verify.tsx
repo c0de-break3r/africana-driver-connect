@@ -59,7 +59,7 @@ export default function FacialVerifyScreen() {
   if (!CameraView || !useCameraPermissions) {
     return (
       <DriverStepShell
-        stepIndex={5}
+        stepIndex={4}
         title="Facial verification"
         description="Take a quick selfie to confirm your identity matches your documents."
         buttonTitle="Skip & Continue"
@@ -258,7 +258,7 @@ function CameraFacialCapture({
   if (phase === "instructions") {
     return (
       <DriverStepShell
-        stepIndex={5}
+        stepIndex={4}
         title="Facial verification"
         description="We'll compare your selfie with your ID photo to confirm your identity."
         buttonTitle="Start Selfie"
@@ -323,7 +323,7 @@ function CameraFacialCapture({
     const passed = faceMatchPassed === true;
     return (
       <DriverStepShell
-        stepIndex={5}
+        stepIndex={3}
         title={passed ? "Identity verified!" : "Verification needs review"}
         description={
           passed
@@ -367,7 +367,7 @@ function CameraFacialCapture({
   if (phase === "preview" && uri) {
     return (
       <DriverStepShell
-        stepIndex={5}
+        stepIndex={3}
         title="Review your selfie"
         description="Make sure your face is clearly visible and well-lit."
         buttonTitle="Verify My Identity"
