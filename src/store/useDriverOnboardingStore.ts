@@ -392,7 +392,7 @@ setExperience: (yearsExperience) => set({ yearsExperience }),
       setVerificationMethod: (verificationMethod) =>
         set({ verificationMethod }),
       markOnboardingComplete: () =>
-        set({ onboardingComplete: true, currentStep: 15 }),
+        set({ onboardingComplete: true, currentStep: 16 }),
       markProfileDocumentsUploaded: () =>
         set({ profileDocumentsUploaded: true }),
       reset: () => set(initialState),

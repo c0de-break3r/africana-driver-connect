@@ -54,8 +54,8 @@ export default function QualificationPreCheckScreen() {
     if (!canContinue || !selectedVehicle) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setQualificationPreCheck(selectedVehicle, hasValidLicense, hasActiveGhanaCard);
-    setStep(3);
-    router.push("/(onboarding)/driver/employment" as Href);
+    setStep(2);
+    router.push("/(onboarding)/driver/experience" as Href);
   };
 
   const requirements = selectedVehicle ? REQUIREMENTS[selectedVehicle] : null;
@@ -66,7 +66,7 @@ export default function QualificationPreCheckScreen() {
         stepIndex={1}
         title="Choose Your Vehicle"
         description="Select how you want to deliver or drive on the platform."
-        buttonTitle="Continue to Dashboard →"
+        buttonTitle="Continue →"
         buttonDisabled={!canContinue}
         onContinue={handleContinue}
       >

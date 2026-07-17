@@ -22,7 +22,7 @@ export default function EmploymentStatusScreen() {
 
   const handleContinue = () => {
     if (!employmentStatus) return;
-    setStep(2);
+    setStep(4);
     router.push("/(onboarding)/driver/goals" as Href);
   };
 

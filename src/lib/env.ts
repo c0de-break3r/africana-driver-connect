@@ -1,9 +1,3 @@
-export const dojahConfig = {
-  appId: process.env.EXPO_PUBLIC_DOJAH_APP_ID ?? "",
-  secretKey: process.env.EXPO_PUBLIC_DOJAH_SECRET_KEY ?? "",
-  environment: (process.env.EXPO_PUBLIC_DOJAH_ENVIRONMENT as "sandbox" | "production") ?? "sandbox",
-};
-
 export const clerkConfig = {
   publishableKey: process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "",
 };

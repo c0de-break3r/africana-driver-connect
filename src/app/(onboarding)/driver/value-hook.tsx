@@ -21,7 +21,7 @@ const SLIDER_WIDTH = SCREEN_WIDTH - 56 - 48; // Card padding 24*2 + thumb radius
 const MIN_HOURS = 10;
 const MAX_HOURS = 70;
 const HOURLY_RATE = 50;
-const TOTAL_STEPS = 15;
+const TOTAL_STEPS = 17;
 
 export default function ValueHook() {
   const [hours, setHours] = useState(MIN_HOURS);

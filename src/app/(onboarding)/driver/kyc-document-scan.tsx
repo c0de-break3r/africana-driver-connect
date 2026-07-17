@@ -42,7 +42,7 @@ export default function KycDocumentScanScreen() {
     
     // Simulate camera capture
     setTimeout(() => {
-      const mockUri = `captured-${Date.now()}.jpg`;
+      const mockUri = "https://via.placeholder.com/300x400/2C3E5B/FFFFFF?text=ID";
       if (phase === "front") {
         setDocumentCapture(mockUri);
         setPhase("back");

@@ -23,8 +23,8 @@ export default function DrivingExperienceScreen() {
 
   const handleContinue = () => {
     if (!yearsExperience) return;
-    setStep(2);
-    router.push("/(onboarding)/driver/qualification-pre-check" as Href);
+    setStep(3);
+    router.push("/(onboarding)/driver/employment" as Href);
   };
 
   return (
