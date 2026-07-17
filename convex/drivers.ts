@@ -159,10 +159,11 @@ export const createProfile = mutation({
       payoutMethod: args.payoutMethod,
       payoutAccountName: args.payoutAccountName,
       payoutAccountNumber: args.payoutAccountNumber,
-      verificationStatus: "pending",
-      totalTrips: 0,
-      createdAt: now,
-      updatedAt: now,
+verificationStatus: "pending",
+    kycStatus: "not_started",
+    totalTrips: 0,
+    createdAt: now,
+    updatedAt: now,
     });
   },
 });
