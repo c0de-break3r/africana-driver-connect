@@ -35,13 +35,13 @@ const OPTIONS: RoleOption[] = [
   },
   {
     key: "owner",
-    icon: "🚛",
+    icon: "👨🏾‍💼",
     title: "Vehicle Owner",
     description: "I own a vehicle — find drivers to hire",
   },
   {
     key: "client",
-    icon: "👤",
+    icon: "🧑‍🦰",
     title: "Client",
     description: "I need a ride or driver for an occasion",
   },
@@ -49,7 +49,7 @@ const OPTIONS: RoleOption[] = [
     key: "corporate",
     icon: "🏢",
     title: "Corporate Client",
-    description: "I manage outsourced drivers or fleets for my organization",
+    description: "I manage outsourced drivers or fleets",
   },
 ];
 

@@ -11,7 +11,7 @@ export default function KycIntroScreen() {
     try {
       setConsentGiven(false);
       setStep(2);
-      router.push("/(onboarding)/driver/kyc-document-scan" as any);
+      router.push("/(driver)/verify" as any);
     } catch (error) {
       console.error("KYC navigation error:", error);
     }
@@ -57,16 +57,16 @@ export default function KycIntroScreen() {
           <ChecklistItem number={3} title="Get verified" description="Usually instant, sometimes a few hours" isActive />
         </View>
 
+        <Pressable style={styles.continueBtn} onPress={handleStart}>
+          <Text style={styles.continueText}>Start verification</Text>
+        </Pressable>
+
         <View style={styles.disclosure}>
           <Ionicons name="lock-closed" size={16} color="#6E7E91" />
           <Text style={styles.disclosureText}>
             Your data is encrypted, used only for identity verification, and deleted after 90 days.
           </Text>
         </View>
-
-        <Pressable style={styles.continueBtn} onPress={handleStart}>
-          <Text style={styles.continueText}>Start verification</Text>
-        </Pressable>
       </View>
     </SafeAreaView>
   );
