@@ -263,7 +263,7 @@ export default function Welcome() {
   const handleLetsGo = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     useOnboardingAnswersStore.getState().setLastCompletedScreen("welcome");
-    router.push("/(onboarding)/role-question" as Href);
+    router.push("/(onboarding)/role-select" as Href);
   };
 
   const slide = SLIDES[currentSlide];

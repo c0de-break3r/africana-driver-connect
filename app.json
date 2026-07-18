@@ -8,18 +8,19 @@
     "scheme": "africanadriverconnect",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon",
+      "icon": "./assets/images/icon.png",
       "infoPlist": {
         "NSCameraUsageDescription": "Africana Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via Dojah.",
         "NSPhotoLibraryUsageDescription": "Africana Driver Connect needs photo library access so you can upload your driver's license if you prefer.",
         "NSMicrophoneUsageDescription": "Dojah may request microphone access during the video selfie verification step."
-      }
+      },
+      "bundleIdentifier": "com.codebreak3r.africanadriverconnect"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFF8F3",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/icon.png",
+        "monochromeImage": "./assets/images/icon.png"
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
@@ -32,7 +33,7 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/icon.png"
     },
     "plugins": [
       "expo-router",

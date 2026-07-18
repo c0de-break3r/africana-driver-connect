@@ -2,9 +2,10 @@ import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-
-import { PrimaryButton, ScreenContainer } from "@/components/ui";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { PrimaryButton } from "@/components/ui";
 import { useRoleStore, type UserRole } from "@/store/useRoleStore";
+
 
 /* ──────────────────────────────────────────────
  * Role definitions — each card is a genuine fork
@@ -50,10 +51,7 @@ const ROLES: RoleOption[] = [
 
 /**
  * Role selection — the core UX fork of the entire app.
- * Matches Role Selection.html: progress bar, header, 4 cards, sticky CTA.
- *
- * On selection: stores role in Zustand (AsyncStorage-persisted),
- * then routes to (auth)/sign-in.
+ * Matches kyc-intro.tsx positioning: SafeAreaView with top edges, header, ScrollView content.
  */
 export default function RoleSelect() {
   const [selected, setSelected] = useState<UserRole | null>(null);
@@ -67,24 +65,32 @@ export default function RoleSelect() {
   };
 
   return (
-    <ScreenContainer>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* ── Header ── */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backArrow}>‹</Text>
+        </Pressable>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
-        <View className="px-6 pt-6 pb-4">
-          <Text className="text-2xl font-bold text-foreground">
-            Choose Your Role
-          </Text>
-          <Text className="text-sm text-muted-foreground mt-2 leading-5">
-            Select how you would like to participate in the Africana
-            marketplace. You can add extra roles later.
-          </Text>
+        {/* ── Step Badge ── */}
+        <View style={styles.stepBadge}>
+          <Text style={styles.stepText}>Choose Your Role</Text>
         </View>
 
+        <Text style={styles.title}>Select how you will participate</Text>
+
+        <Text style={styles.subtitle}>
+          Choose your role in the Africana marketplace. You can add extra roles
+          later in settings.
+        </Text>
+
         {/* ── Role cards ── */}
-        <View className="px-6 gap-4 pb-32">
+        <View style={styles.cardsContainer}>
           {ROLES.map((role) => {
             const isSelected = selected === role.key;
             return (
@@ -108,7 +114,7 @@ export default function RoleSelect() {
                     </View>
                   )}
 
-                  <View className="flex-row gap-4">
+                  <View style={styles.cardRow}>
                     {/* Icon */}
                     <View
                       style={[
@@ -122,13 +128,9 @@ export default function RoleSelect() {
                     </View>
 
                     {/* Text */}
-                    <View className="flex-1">
-                      <Text className="text-base font-bold text-foreground">
-                        {role.title}
-                      </Text>
-                      <Text className="text-xs text-muted-foreground mt-1 leading-5">
-                        {role.description}
-                      </Text>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.cardTitle}>{role.title}</Text>
+                      <Text style={styles.cardDesc}>{role.description}</Text>
                     </View>
                   </View>
                 </View>
@@ -136,18 +138,18 @@ export default function RoleSelect() {
             );
           })}
         </View>
-      </ScrollView>
 
-      {/* ── Bottom sticky CTA ── */}
-      <View style={styles.stickyBottom}>
-        <PrimaryButton
-          title="Continue to Setup"
-          onPress={handleContinue}
-          disabled={!selected}
-          style={{ width: "100%" }}
-        />
-      </View>
-    </ScreenContainer>
+        {/* ── CTA Button (in scroll flow) ── */}
+        <View style={styles.buttonContainer}>
+          <PrimaryButton
+            title="Continue to Setup"
+            onPress={handleContinue}
+            disabled={!selected}
+            style={{ width: "100%" }}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -157,38 +159,71 @@ export default function RoleSelect() {
  * ────────────────────────────────────────────── */
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF8F3",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  backArrow: {
+    fontSize: 24,
+    color: "#2C3E5B",
+    fontWeight: "300",
+  },
   scroll: {
     flexGrow: 1,
-    paddingBottom: 120,
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 32,
   },
-
-  /* Progress bar */
-  progressBar: {
-    height: 6,
-    width: "100%",
-    backgroundColor: "#F5ECE5",
-    borderRadius: 999,
-    overflow: "hidden",
+  stepBadge: {
+    backgroundColor: "#E8ECF0",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: "flex-start",
+    marginBottom: 16,
   },
-  progressFill: {
-    height: "100%",
-    backgroundColor: "#FF7B54",
-    borderRadius: 999,
-  },
-  progressLabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 1,
-    textTransform: "uppercase",
+  stepText: {
+    fontSize: 12,
     color: "#6E7E91",
+    fontWeight: "500",
   },
-  progressHighlight: {
-    fontSize: 10,
+  title: {
+    fontSize: 28,
     fontWeight: "700",
-    color: "#FF7B54",
+    color: "#2C3E5B",
+    textAlign: "center",
+    marginBottom: 16,
   },
-
-  /* Cards */
+  subtitle: {
+    fontSize: 14,
+    color: "#6E7E91",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  cardsContainer: {
+    marginBottom: 24,
+  },
   card: {
     padding: 20,
     borderRadius: 16,
@@ -198,6 +233,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 12,
     elevation: 3,
+    marginBottom: 16,
   },
   cardSelected: {
     borderWidth: 2,
@@ -212,8 +248,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#EAE1D9",
   },
-
-  /* Check badge */
   checkBadge: {
     position: "absolute",
     top: 16,
@@ -231,8 +265,10 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
   },
-
-  /* Icon box */
+  cardRow: {
+    flexDirection: "row",
+    gap: 16,
+  },
   iconBox: {
     width: 48,
     height: 48,
@@ -249,16 +285,22 @@ const styles = StyleSheet.create({
   iconEmoji: {
     fontSize: 24,
   },
-
-  /* Sticky bottom */
-  stickyBottom: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: 32,
-    paddingTop: 16,
-    backgroundColor: "#FFF8F3",
+  textContainer: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2C3E5B",
+  },
+  cardDesc: {
+    fontSize: 12,
+    color: "#6E7E91",
+    marginTop: 4,
+    lineHeight: 16,
+  },
+  buttonContainer: {
+    paddingVertical: 16,
   },
 });

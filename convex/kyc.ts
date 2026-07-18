@@ -172,6 +172,97 @@ export const submitSelfie = mutation({
 });
 
 /**
+ * Process back-of-card document data from Dojah
+ * Extracts and validates back-of-card fields (expiry, issuing authority, etc.)
+ */
+export const processBackOfCard = mutation({
+  args: {
+    documentBackUri: v.string(),
+    documentType: v.union(
+      v.literal("passport"),
+      v.literal("drivers_license"),
+      v.literal("national_id"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+
+    const driver = await ctx.db
+      .query("drivers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!driver) {
+      throw new Error("Driver profile not found");
+    }
+
+    const verificationId = `back_${Date.now()}`;
+
+    const dojahAppId = process.env.DOJAH_APP_ID;
+    const dojahSecretKey = process.env.DOJAH_SECRET_KEY;
+
+    if (!dojahAppId || !dojahSecretKey) {
+      throw new Error("Dojah credentials not configured");
+    }
+
+    const credentials = btoa(`${dojahAppId}:${dojahSecretKey}`);
+
+    const dojahResponse = await fetch(`${DOJAH_BASE_URL}/v1/verification/document`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${credentials}`,
+      },
+      body: JSON.stringify({
+        document_type: args.documentType,
+        document_front: driver.nationalIdFrontStorageId || driver.licenseFrontStorageId || "",
+        document_back: args.documentBackUri,
+      }),
+    });
+
+    const dojahData = await dojahResponse.json();
+
+    const backOfCardData = dojahData?.data || {};
+    const extractedData = {
+      expiryDate: backOfCardData?.expiry_date || backOfCardData?.expiry || null,
+      issuingAuthority: backOfCardData?.issuing_authority || backOfCardData?.issuing_body || null,
+      documentNumber: backOfCardData?.document_number || backOfCardData?.id_number || null,
+      mrzData: backOfCardData?.mrz_data || null,
+      barcodeData: backOfCardData?.barcode_data || null,
+      rawResponse: JSON.stringify(backOfCardData),
+    };
+
+    await ctx.db.patch(driver._id, {
+      backOfCardExtracted: true,
+      backOfCardExpiryDate: extractedData.expiryDate,
+      backOfCardIssuingAuthority: extractedData.issuingAuthority,
+      backOfCardDocumentNumber: extractedData.documentNumber,
+      backOfCardExtractedData: extractedData.rawResponse,
+      kycStatus: "in_progress",
+    });
+
+    await ctx.db.insert("verifications", {
+      userId: user._id,
+      type: args.documentType === "national_id" ? "national_id" : "license",
+      provider: "dojah",
+      status: "submitted",
+      providerId: verificationId,
+      frontStorageId: driver.nationalIdFrontStorageId || driver.licenseFrontStorageId,
+      backStorageId: args.documentBackUri,
+      extractedData: JSON.stringify(extractedData),
+      backOfCardParsed: true,
+      submittedAt: Date.now(),
+    });
+
+    return {
+      verificationId,
+      status: "submitted" as "submitted",
+      data: extractedData,
+    };
+  },
+});
+
+/**
  * Update KYC verification status
  * Can be called by authenticated user or internal webhook
  */

@@ -3,13 +3,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 /** Ordered list of onboarding screens for progress tracking. */
-export const ONBOARDING_SCREENS = [
-  "welcome",
-  "role-question",
-  "foundational-questions",
-  "bombshell",
-  "closing-reflection",
-] as const;
+export const ONBOARDING_SCREENS = ["welcome", "role-select"] as const;
 
 export type OnboardingScreen = (typeof ONBOARDING_SCREENS)[number];
 

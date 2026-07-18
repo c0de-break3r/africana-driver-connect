@@ -76,6 +76,12 @@ export default defineSchema({
     extractedLicenseNumber: v.optional(v.string()),
     extractedLicenseClass: v.optional(v.string()),
     extractedLicenseExpiry: v.optional(v.string()),
+    // Back-of-card extracted data
+    backOfCardExtracted: v.optional(v.boolean()),
+    backOfCardExpiryDate: v.optional(v.string()),
+    backOfCardIssuingAuthority: v.optional(v.string()),
+    backOfCardDocumentNumber: v.optional(v.string()),
+    backOfCardExtractedData: v.optional(v.string()), // JSON string
     // Face verification result
     faceMatchPassed: v.optional(v.boolean()),
     faceMatchConfidence: v.optional(v.float64()),
@@ -268,6 +274,8 @@ export default defineSchema({
     selfieStorageId: v.optional(v.string()),
     // OCR results
     extractedData: v.optional(v.string()), // JSON string of extracted fields
+    // Back-of-card parsing
+    backOfCardParsed: v.optional(v.boolean()),
     // Face match
     faceMatchScore: v.optional(v.float64()),
     submittedAt: v.optional(v.number()),
