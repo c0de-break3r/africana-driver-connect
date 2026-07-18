@@ -76,7 +76,7 @@ export default function KycLivenessScreen() {
 
         <View style={styles.indicators}>
           <Indicator icon="sunny" label="Good light" active={true} />
-          <Indicator icon="hand-lift" label="Stay still" active={true} />
+          <Indicator icon="hand-up" label="Stay still" active={true} />
           <Indicator icon="person" label="Face forward" active={true} />
         </View>
 
@@ -101,7 +101,7 @@ export default function KycLivenessScreen() {
           <View style={styles.dialog}>
             <Text style={styles.dialogTitle}>Exit verification?</Text>
             <Text style={styles.dialogBody}>
-              Your progress will be lost. You'll need to restart verification later.
+              Your progress will be lost. You&apos;ll need to restart verification later.
             </Text>
             <View style={styles.dialogButtons}>
               <Pressable style={styles.dialogBtn} onPress={handleCancelExit}>

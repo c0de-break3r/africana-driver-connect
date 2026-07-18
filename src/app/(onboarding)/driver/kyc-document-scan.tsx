@@ -1,62 +1,135 @@
 import { Ionicons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   ActivityIndicator,
-  Image,
-  Modal,
+  Alert,
   Pressable,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useKycFlowStore } from "@/store/useKycFlowStore";
 
-type CapturePhase = "front" | "back" | "preview";
+type CapturePhase = "front" | "scan_id" | "back";
 
 export default function KycDocumentScanScreen() {
   const {
-    documentType,
     documentFrontUri,
     documentBackUri,
-    setDocumentType,
     setDocumentCapture,
     setStep,
   } = useKycFlowStore();
-  
+
   const [phase, setPhase] = useState<CapturePhase>(() => {
     if (documentFrontUri) {
-      return documentBackUri ? "preview" : "back";
+      if (documentBackUri) return "back";
+      return "scan_id";
     }
     return "front";
   });
-  
+
   const [capturing, setCapturing] = useState(false);
-  const [showWrongDocModal, setShowWrongDocModal] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraReady, setCameraReady] = useState(false);
+  const cameraRef = useRef<CameraView>(null!);
+
+  // Auto-transition to scan_id when permission is granted on front phase
+  useEffect(() => {
+    if (permission?.granted && phase === "front" && !documentFrontUri) {
+      setPhase("scan_id");
+    }
+  }, [permission, phase, documentFrontUri]);
+
+  const requestAllPermissions = async () => {
+    const { status } = await requestPermission();
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera Permission Required",
+        "Please enable camera access in your device settings.",
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const requestCameraPermission = async () => {
+    const { status } = await requestPermission();
+    if (status !== "granted") {
+      Alert.alert(
+        "Camera Permission Required",
+        "Please enable camera access in your device settings.",
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const requestMediaPermission = async () => {
+    const hasPermission = await requestCameraPermission();
+    if (!hasPermission) return false;
+    return true;
+  };
 
   const handleCapture = async () => {
-    if (capturing) return;
+    const hasPermission = await requestMediaPermission();
+    if (!hasPermission) return;
+
+    if (capturing || !cameraReady) return;
     setCapturing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    
-    // Simulate camera capture
-    setTimeout(() => {
-      const mockUri = "https://via.placeholder.com/300x400/2C3E5B/FFFFFF?text=ID";
-      if (phase === "front") {
-        setDocumentCapture(mockUri);
-        setPhase("back");
-      } else if (phase === "back") {
-        setDocumentCapture(documentFrontUri, mockUri);
-        setPhase("preview");
+
+    try {
+      if (cameraRef.current) {
+        const photo = await cameraRef.current.takePictureAsync({
+          quality: 0.8,
+        });
+        if (phase === "scan_id") {
+          setDocumentCapture(photo.uri);
+          setStep(2);
+          setPhase("back");
+        } else if (phase === "back") {
+          setDocumentCapture(documentFrontUri, photo.uri);
+          setStep(3);
+          router.push("/(onboarding)/driver/kyc-liveness" as any);
+        }
       }
+    } catch (error) {
+      console.error("Camera capture error:", error);
+      Alert.alert(
+        "Capture Failed",
+        "Could not capture image. Please try again.",
+        [{ text: "OK" }]
+      );
+    } finally {
       setCapturing(false);
-    }, 1500);
+    }
+  };
+
+  const handleUpload = async () => {
+    const hasPermission = await requestMediaPermission();
+    if (!hasPermission) return;
+
+    const mockUri = "https://via.placeholder.com/300x400/2C3E5B/FFFFFF?text=Upload";
+    if (phase === "scan_id") {
+      setDocumentCapture(mockUri);
+      setStep(2);
+      setPhase("back");
+    } else if (phase === "back") {
+      setDocumentCapture(documentFrontUri, mockUri);
+      setStep(3);
+      router.push("/(onboarding)/driver/kyc-liveness" as any);
+    }
   };
 
   const handleRetake = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (phase === "preview") {
+    if (phase === "scan_id") {
       setDocumentCapture("");
       setPhase("front");
     } else if (phase === "back") {
@@ -65,111 +138,284 @@ export default function KycDocumentScanScreen() {
     }
   };
 
-  const handleContinue = () => {
-    if (!documentFrontUri || !documentBackUri) return;
-    
-    // Validate document
-    const isValid = Math.random() > 0.15; // 85% pass rate
-    if (!isValid) {
-      setShowWrongDocModal(true);
-      return;
-    }
-    
-    setStep(3);
-    router.push("/(onboarding)/driver/kyc-liveness" as any);
-  };
-
-  if (phase === "preview" && documentFrontUri && documentBackUri) {
+  // Front phase - Choose ID (only show permission request)
+  if (phase === "front") {
     return (
-      <View style={styles.container}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backArrow}>‹</Text>
-        </Pressable>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <View style={styles.header}>
+          <Pressable onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={styles.backArrow}>‹</Text>
+          </Pressable>
+        </View>
 
-        <Text style={styles.title}>Review your document</Text>
-        <Text style={styles.subtitle}>Make sure both sides are clear and readable.</Text>
-
-        <View style={styles.previewContainer}>
-          <View style={styles.previewCard}>
-            <Text style={styles.previewLabel}>Front</Text>
-            <Image source={{ uri: documentFrontUri }} style={styles.previewImage} />
-          </View>
-          <View style={styles.previewCard}>
-            <Text style={styles.previewLabel}>Back</Text>
-            <Image source={{ uri: documentBackUri }} style={styles.previewImage} />
+        <View style={styles.numberProgressContainer}>
+          <View style={styles.horizontalProgressRow}>
+            <View style={styles.stepItem}>
+              <View style={documentFrontUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+                {documentFrontUri ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.numberText}>1</Text>
+                )}
+              </View>
+              <Text style={styles.stepName}>Choose ID</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.stepItem}>
+              <View style={documentBackUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+                {documentBackUri ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.numberText}>2</Text>
+                )}
+              </View>
+              <Text style={styles.stepName}>Scan ID</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.stepItem}>
+              <View style={styles.numberCircleActive}>
+                <Text style={styles.numberText}>3</Text>
+              </View>
+              <Text style={styles.stepName}>Selfie</Text>
+            </View>
           </View>
         </View>
 
-        {showWrongDocModal && (
-          <Modal visible={true} transparent animationType="fade">
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalCard}>
-                <View style={styles.modalIcon}>
-                  <Ionicons name="alert-circle" size={48} color="#E74C3C" />
+        <Text style={styles.title}>Front & Back of document</Text>
+        <Text style={styles.subtitle}>
+          Hold your ID flat and in good light
+        </Text>
+
+        <View style={styles.captureFrame}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing="back"
+            onCameraReady={() => setCameraReady(true)}
+          />
+          <View style={styles.cameraOverlay}>
+            <View style={styles.frameBorder}>
+              <View style={styles.frameCornerTopLeft} />
+              <View style={styles.frameCornerTopRight} />
+              <View style={styles.frameCornerBottomLeft} />
+              <View style={styles.frameCornerBottomRight} />
+              <View style={styles.frameContent}>
+                <View style={styles.idCardInFrame}>
+                  <View style={styles.idCardPhotoPlaceholderLeft}>
+                    <View style={styles.idCardPhotoInner} />
+                  </View>
+                  <View style={styles.idCardTextLine} />
+                  <View style={styles.idCardTextLineLong} />
+                  <View style={styles.profileIconInCard}>
+                    <Ionicons name="person" size={16} color="#FFFFFF" />
+                  </View>
                 </View>
-                <Text style={styles.modalTitle}>Wrong document detected</Text>
-                <Text style={styles.modalBody}>
-                  The image does not appear to be a valid ID. Please retake.
-                </Text>
-                <Pressable style={styles.modalBtn} onPress={() => setShowWrongDocModal(false)}>
-                  <Text style={styles.modalBtnText}>Retake</Text>
-                </Pressable>
+                <Text style={styles.frameHint}>Position document here</Text>
               </View>
             </View>
-          </Modal>
-        )}
+          </View>
+        </View>
 
-        <View style={styles.controls}>
-          <Pressable style={styles.retakeBtn} onPress={handleRetake}>
-            <Ionicons name="camera" size={16} color="#2C3E5B" />
-            <Text style={styles.retakeText}>Retake</Text>
-          </Pressable>
-          <Pressable style={styles.continueBtn} onPress={handleContinue}>
-            <Text style={styles.continueText}>Continue →</Text>
+        <View style={styles.checklistSection}>
+          <Text style={styles.checklistLabel}>MAKE SURE THAT</Text>
+          <ChecklistItem text="Document is not expired" />
+          <ChecklistItem text="Entire document fits in the frame" />
+          <ChecklistItem text="Image is clear with no glare" />
+          <ChecklistItem text="All text is clearly readable" />
+        </View>
+
+        <View style={styles.buttons}>
+          <Pressable style={styles.primaryBtn} onPress={requestAllPermissions}>
+            <Ionicons name="lock-closed" size={16} color="#FFFFFF" />
+            <Text style={styles.primaryBtnText}>Request permission</Text>
           </Pressable>
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
-  const isFront = phase === "front";
+  // Scan ID phase - Capture front of ID
+  if (phase === "scan_id") {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <View style={styles.header}>
+          <Pressable onPress={() => setPhase("front")} style={styles.backBtn}>
+            <Text style={styles.backArrow}>‹</Text>
+          </Pressable>
+        </View>
 
+        <View style={styles.numberProgressContainer}>
+          <View style={styles.horizontalProgressRow}>
+            <View style={styles.stepItem}>
+              <View style={documentFrontUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+                {documentFrontUri ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.numberText}>1</Text>
+                )}
+              </View>
+              <Text style={styles.stepName}>Choose ID</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.stepItem}>
+              <View style={documentBackUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+                {documentBackUri ? (
+                  <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.numberText}>2</Text>
+                )}
+              </View>
+              <Text style={styles.stepName}>Scan ID</Text>
+            </View>
+            <View style={styles.progressLine} />
+            <View style={styles.stepItem}>
+              <View style={styles.numberCircleActive}>
+                <Text style={styles.numberText}>3</Text>
+              </View>
+              <Text style={styles.stepName}>Selfie</Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.title}>Scan ID</Text>
+        <Text style={styles.subtitle}>Capture the front of your ID</Text>
+
+        <View style={styles.captureFrame}>
+          <CameraView
+            ref={cameraRef}
+            style={styles.camera}
+            facing="back"
+            onCameraReady={() => setCameraReady(true)}
+          />
+          <View style={styles.cameraOverlay}>
+            <View style={styles.frameBorder}>
+              <View style={styles.frameCornerTopLeft} />
+              <View style={styles.frameCornerTopRight} />
+              <View style={styles.frameCornerBottomLeft} />
+              <View style={styles.frameCornerBottomRight} />
+              <View style={styles.frameContent}>
+                <View style={styles.idCardInFrame}>
+                  <View style={styles.idCardPhotoPlaceholderLeft}>
+                    <View style={styles.idCardPhotoInner} />
+                  </View>
+                  <View style={styles.idCardTextLine} />
+                  <View style={styles.idCardTextLineLong} />
+                  <View style={styles.profileIconInCard}>
+                    <Ionicons name="person" size={16} color="#FFFFFF" />
+                  </View>
+                </View>
+                <Text style={styles.frameHint}>Front of ID</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.checklistSection}>
+          <Text style={styles.checklistLabel}>MAKE SURE THAT</Text>
+          <ChecklistItem text="Document is not expired" />
+          <ChecklistItem text="Entire document fits in the frame" />
+          <ChecklistItem text="Image is clear with no glare" />
+          <ChecklistItem text="All text is clearly readable" />
+        </View>
+
+        <View style={styles.buttons}>
+          <Pressable style={styles.primaryBtn} onPress={handleCapture} disabled={capturing || !cameraReady}>
+            {capturing ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <View style={styles.primaryBtnContent}>
+                <Ionicons name="camera" size={16} color="#FFFFFF" />
+                <Text style={styles.primaryBtnText}>Capture</Text>
+              </View>
+            )}
+          </Pressable>
+          <Pressable style={styles.secondaryBtn} onPress={handleUpload}>
+            <Text style={styles.secondaryBtnText}>Upload from photo library</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Back phase - Capture back of ID
   return (
-    <View style={styles.container}>
-      <Pressable onPress={() => router.back()} style={styles.backBtn}>
-        <Text style={styles.backArrow}>‹</Text>
-      </Pressable>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.header}>
+        <Pressable onPress={() => setPhase("scan_id")} style={styles.backBtn}>
+          <Text style={styles.backArrow}>‹</Text>
+        </Pressable>
+      </View>
 
-      <View style={styles.progressContainer}>
-        <View style={styles.progressStep}>
-          <Ionicons name="camera" size={16} color="#FFFFFF" />
-          <Text style={styles.progressText}>Choose ID</Text>
-        </View>
-        <View style={styles.progressLine} />
-        <View style={styles.progressStepActive}>
-          <Ionicons name="scan" size={16} color="#FFFFFF" />
-          <Text style={styles.progressText}>Scan ID</Text>
-        </View>
-        <View style={styles.progressLine} />
-        <View style={styles.progressStep}>
-          <Ionicons name="person" size={16} color="#6E7E91" />
-          <Text style={styles.progressText}>Selfie</Text>
+      <View style={styles.numberProgressContainer}>
+        <View style={styles.horizontalProgressRow}>
+          <View style={styles.stepItem}>
+            <View style={documentFrontUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+              {documentFrontUri ? (
+                <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+              ) : (
+                <Text style={styles.numberText}>1</Text>
+              )}
+            </View>
+            <Text style={styles.stepName}>Choose ID</Text>
+          </View>
+          <View style={styles.progressLine} />
+          <View style={styles.stepItem}>
+            <View style={documentBackUri ? styles.numberCircleCompleted : styles.numberCircleActive}>
+              {documentBackUri ? (
+                <Ionicons name="checkmark" size={16} color="#FFFFFF" />
+              ) : (
+                <Text style={styles.numberText}>2</Text>
+              )}
+            </View>
+            <Text style={styles.stepName}>Scan ID</Text>
+          </View>
+          <View style={styles.progressLine} />
+          <View style={styles.stepItem}>
+            <View style={styles.numberCircleActive}>
+              <Text style={styles.numberText}>3</Text>
+            </View>
+            <Text style={styles.stepName}>Selfie</Text>
+          </View>
         </View>
       </View>
 
-      <Text style={styles.title}>{isFront ? "Front of document" : "Back of document"}</Text>
+      <Text style={styles.title}>Back of document</Text>
       <Text style={styles.subtitle}>
-        Hold your {documentType === "national_id" ? "Ghana Card" : "Driver's License"} flat and in good light
+        Hold your ID flat and in good light
       </Text>
 
       <View style={styles.captureFrame}>
-        <View style={styles.framePlaceholder}>
-          <Ionicons name="document-text" size={32} color="#2C3E5B" />
-          <Text style={styles.frameHint}>Position document here</Text>
+        <CameraView
+          ref={cameraRef}
+          style={styles.camera}
+          facing="back"
+          onCameraReady={() => setCameraReady(true)}
+        />
+        <View style={styles.cameraOverlay}>
+          <View style={styles.frameBorder}>
+            <View style={styles.frameCornerTopLeft} />
+            <View style={styles.frameCornerTopRight} />
+            <View style={styles.frameCornerBottomLeft} />
+            <View style={styles.frameCornerBottomRight} />
+            <View style={styles.frameContent}>
+              <View style={styles.idCardInFrame}>
+                <View style={styles.idCardPhotoPlaceholderLeft}>
+                  <View style={styles.idCardPhotoInner} />
+                </View>
+                <View style={styles.idCardTextLine} />
+                <View style={styles.idCardTextLineLong} />
+                <View style={styles.profileIconInCard}>
+                  <Ionicons name="person" size={16} color="#FFFFFF" />
+                </View>
+              </View>
+              <Text style={styles.frameHint}>Back of ID</Text>
+            </View>
+          </View>
         </View>
       </View>
 
-      <View style={styles.checklist}>
+      <View style={styles.checklistSection}>
+        <Text style={styles.checklistLabel}>MAKE SURE THAT</Text>
         <ChecklistItem text="Document is not expired" />
         <ChecklistItem text="Entire document fits in the frame" />
         <ChecklistItem text="Image is clear with no glare" />
@@ -181,14 +427,17 @@ export default function KycDocumentScanScreen() {
           {capturing ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.primaryBtnText}>Open camera</Text>
+            <View style={styles.primaryBtnContent}>
+              <Ionicons name="camera" size={16} color="#FFFFFF" />
+              <Text style={styles.primaryBtnText}>Capture</Text>
+            </View>
           )}
         </Pressable>
-        <Pressable style={styles.secondaryBtn} onPress={() => {}}>
-          <Text style={styles.secondaryBtnText}>Upload from library</Text>
+        <Pressable style={styles.secondaryBtn} onPress={handleUpload}>
+          <Text style={styles.secondaryBtnText}>Upload from photo library</Text>
         </Pressable>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -199,7 +448,7 @@ type ChecklistItemProps = {
 function ChecklistItem({ text }: ChecklistItemProps) {
   return (
     <View style={styles.checklistItem}>
-      <Ionicons name="checkmark-circle" size={20} color="#27AE60" />
+      <Ionicons name="checkmark-circle" size={20} color="#FF7B54" />
       <Text style={styles.checklistItemText}>{text}</Text>
     </View>
   );
@@ -210,51 +459,76 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF8F3",
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   backBtn: {
-    position: "absolute",
-    top: 16,
-    left: 16,
     width: 40,
     height: 40,
     borderRadius: 20,
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
-    zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backArrow: {
     fontSize: 24,
     color: "#2C3E5B",
     fontWeight: "300",
   },
-  progressContainer: {
+  numberProgressContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 16,
+  },
+  horizontalProgressRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E8ECF0",
   },
-  progressStep: {
+  stepItem: {
     alignItems: "center",
-    paddingHorizontal: 16,
   },
-  progressStepActive: {
-    alignItems: "center",
-    backgroundColor: "#2C3E5B",
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 12,
+  stepName: {
+    fontSize: 12,
+    color: "#6E7E91",
+    fontWeight: "500",
+    marginTop: 4,
   },
   progressLine: {
-    width: 20,
+    width: 40,
     height: 2,
     backgroundColor: "#E8ECF0",
+    marginHorizontal: 8,
   },
-  progressText: {
-    fontSize: 10,
-    color: "#6E7E91",
-    marginTop: 4,
+  numberCircleCompleted: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#FF7B54",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  numberCircleActive: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#2C3E5B",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  numberText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#FFFFFF",
+    marginLeft: 8,
   },
   title: {
     fontSize: 22,
@@ -273,22 +547,148 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
-  framePlaceholder: {
-    alignItems: "center",
-    padding: 24,
-    backgroundColor: "#FFFFFF",
+  camera: {
+    width: 280,
+    height: 180,
     borderRadius: 16,
+    overflow: "hidden",
+  },
+  cameraOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  frameBorder: {
+    width: 280,
+    height: 180,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderStyle: "dashed",
+    backgroundColor: "#F5F6F8",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  frameCornerTopLeft: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 24,
+    height: 24,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: "#000000",
+    borderTopLeftRadius: 4,
+  },
+  frameCornerTopRight: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderColor: "#000000",
+    borderTopRightRadius: 4,
+  },
+  frameCornerBottomLeft: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    width: 24,
+    height: 24,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: "#000000",
+    borderBottomLeftRadius: 4,
+  },
+  frameCornerBottomRight: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 24,
+    height: 24,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderColor: "#000000",
+    borderBottomRightRadius: 4,
+  },
+  frameContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
+  idCardInFrame: {
+    width: 180,
+    height: 100,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: "#E8ECF0",
-    borderStyle: "dashed",
+    transform: [{ rotate: "-8deg" }],
+    padding: 12,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  idCardPhotoPlaceholderLeft: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: "#E8ECF0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  idCardPhotoInner: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    backgroundColor: "#CBD5E0",
+  },
+  idCardTextLine: {
+    height: 3,
+    backgroundColor: "#E0E4E8",
+    borderRadius: 1,
+    marginBottom: 8,
+    width: "100%",
+  },
+  idCardTextLineLong: {
+    height: 3,
+    backgroundColor: "#E0E4E8",
+    borderRadius: 1,
+    width: "80%",
+  },
+  profileIconInCard: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#2C3E5B",
+    justifyContent: "center",
+    alignItems: "center",
   },
   frameHint: {
     fontSize: 12,
     color: "#6E7E91",
-    marginTop: 8,
+    marginTop: 16,
   },
-  checklist: {
+  checklistSection: {
     marginBottom: 24,
+    paddingHorizontal: 24,
+  },
+  checklistLabel: {
+    fontSize: 10,
+    color: "#6E7E91",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 16,
   },
   checklistItem: {
     flexDirection: "row",
@@ -296,7 +696,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   checklistItemText: {
-    fontSize: 13,
+    fontSize: 14,
     color: "#2C3E5B",
     marginLeft: 12,
     flex: 1,
@@ -308,8 +708,14 @@ const styles = StyleSheet.create({
   primaryBtn: {
     backgroundColor: "#2C3E5B",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 24,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryBtnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   primaryBtnText: {
     fontSize: 16,
@@ -318,119 +724,15 @@ const styles = StyleSheet.create({
   },
   secondaryBtn: {
     backgroundColor: "#FFFFFF",
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: "#2C3E5B",
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 24,
     alignItems: "center",
   },
   secondaryBtnText: {
     fontSize: 16,
     fontWeight: "600",
     color: "#2C3E5B",
-  },
-  // Preview styles
-  previewContainer: {
-    flexDirection: "row",
-    gap: 16,
-    paddingHorizontal: 24,
-    flex: 1,
-  },
-  previewCard: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#E8ECF0",
-  },
-  previewLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#6E7E91",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  previewImage: {
-    width: "100%",
-    aspectRatio: 1.586,
-    resizeMode: "cover",
-  },
-  controls: {
-    padding: 24,
-    gap: 12,
-  },
-  retakeBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 12,
-  },
-  retakeText: {
-    fontSize: 14,
-    color: "#2C3E5B",
-    fontWeight: "500",
-  },
-  continueBtn: {
-    backgroundColor: "#2C3E5B",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  continueText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  modalCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 20,
-    padding: 28,
-    alignItems: "center",
-    gap: 16,
-    maxWidth: 400,
-  },
-  modalIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(231, 76, 60, 0.1)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#2C3E5B",
-    textAlign: "center",
-  },
-  modalBody: {
-    fontSize: 14,
-    color: "#6E7E91",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  modalBtn: {
-    backgroundColor: "#E74C3C",
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    borderRadius: 12,
-  },
-  modalBtnText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#FFFFFF",
   },
 });
