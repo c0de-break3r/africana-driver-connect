@@ -10,9 +10,9 @@
     "ios": {
       "icon": "./assets/expo.icon",
       "infoPlist": {
-        "NSCameraUsageDescription": "Africana Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via MetaMap.",
+        "NSCameraUsageDescription": "Africana Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via Dojah.",
         "NSPhotoLibraryUsageDescription": "Africana Driver Connect needs photo library access so you can upload your driver's license if you prefer.",
-        "NSMicrophoneUsageDescription": "MetaMap may request microphone access during the video selfie verification step."
+        "NSMicrophoneUsageDescription": "Dojah may request microphone access during the video selfie verification step."
       }
     },
     "android": {
@@ -40,11 +40,10 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#FFF8F3",
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/icon.png",
           "imageWidth": 200
         }
       ],
-      "./plugins/with-metamap-fixes.js",
       "expo-font",
       "expo-image",
       "expo-secure-store",

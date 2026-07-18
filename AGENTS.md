@@ -62,20 +62,20 @@ Authentication should integrate with Convex.
 
 ## Identity Verification
 
-- Metamap
+- Dojah (https://docs.dojah.io/overview/quickstart)
 
 Important:
 
-This application DOES NOT use Metamap's hosted verification UI.
+This application DOES NOT use Dojah's hosted verification UI.
 
 Instead:
 
 - Build the entire KYC flow using our own React Native UI.
-- Use Metamap APIs only.
-- Use Metamap SDK only where absolutely necessary.
+- Use Dojah APIs only.
+- Use Dojah SDK only where absolutely necessary.
 - All onboarding screens, forms, progress indicators, and success states belong to Africana Driver Connect.
 
-Metamap is responsible only for:
+Dojah is responsible only for:
 
 - Verification session creation
 - Document processing
@@ -84,7 +84,7 @@ Metamap is responsible only for:
 - Webhooks
 - Verification results
 
-Never redirect users into Metamap's default experience unless explicitly requested.
+Never redirect users into Dojah's default experience unless explicitly requested.
 
 ## Maps
 
@@ -222,15 +222,15 @@ Support:
 Never calculate commissions inside screens.
 
 
-# Metamap Rules
+# Dojah Rules
 
 Africana Driver Connect owns the entire verification experience.
 
 Never use:
 
-- Metamap hosted UI
-- Metamap onboarding screens
-- Metamap verification screens
+- Dojah hosted UI
+- Dojah onboarding screens
+- Dojah verification screens
 
 Instead:
 
@@ -247,7 +247,7 @@ Our application builds:
 - Retry
 - Pending review
 
-Only communicate with Metamap through their APIs.
+Only communicate with Dojah through their APIs.
 
 Verification status should be synchronized into Convex.
 
@@ -261,7 +261,7 @@ Possible statuses:
 - rejected
 - expired
 
-Never expose Metamap credentials on the client.
+Never expose Dojah credentials on the client.
 
 
 # Convex Rules

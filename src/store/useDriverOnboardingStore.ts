@@ -5,15 +5,15 @@ import { createJSONStorage, persist } from "zustand/middleware";
 /**
  * Persisted store for the driver-specific 16-step onboarding flow.
  *
- * Steps 0-14 capture onboarding answers before account creation.
- * Step 15 creates the Clerk account and verifies it via OTP.
+ * Steps 0-15 capture onboarding answers before account creation.
+ * Step 16 creates the Clerk account and verifies it via OTP.
  *
  * Flow:
- * 0. Experience, 1. Employment, 2. Goals,
- * 3. ID Capture, 4. License Capture, 5. Facial Verify, 6. Verification Review,
- * 7. Personal Info (auto-filled), 8. License (auto-filled),
- * 9. Vehicle Types, 10. Vehicle Details, 11. Job Type, 12. Location,
- * 13. Safety, 14. Payout, 15. OTP
+ * 0. Value Hook (Welcome & Earnings), 1. Experience, 2. Employment, 3. Goals,
+ * 4. ID Capture, 5. License Capture, 6. Facial Verify, 7. Verification Review,
+ * 8. Personal Info (auto-filled), 9. License (auto-filled),
+ * 10. Vehicle Types, 11. Vehicle Details, 12. Job Type, 13. Location,
+ * 14. Safety, 15. Payout, 16. OTP
  */
 
 export type LicenseClass = "A" | "B" | "C" | "D" | "E" | "F";
@@ -48,8 +48,11 @@ export type VerificationPipelineStatus =
   | "failed";
 
 export type DriverOnboardingState = {
-  /** Current step index (0-15) for the 16-step driver flow. */
+  /** Current step index (0-16) for the 17-step driver flow. */
   currentStep: number;
+
+  // Step 0 — Value Hook (Welcome & Earnings)
+  valueHookCompleted: boolean;
 
   // Step 1 — Driving Experience
   yearsExperience: string | null;
@@ -103,6 +106,11 @@ export type DriverOnboardingState = {
   // Step 10 — Vehicle Types
   vehicleTypes: string[];
 
+  // Step 2 (new) — Qualification Pre-Check
+  selectedVehicleType: "motorbike" | "sedan" | "van" | null;
+  hasValidLicense: boolean;
+  hasActiveGhanaCard: boolean;
+
   // Step 11 — Vehicle Details
   vehicleMake: string;
   vehicleModel: string;
@@ -140,6 +148,11 @@ export type DriverOnboardingState = {
   setExperience: (yearsExperience: string) => void;
   setEmploymentStatus: (employmentStatus: string) => void;
   setDriverGoal: (driverGoal: string) => void;
+  setQualificationPreCheck: (
+    selectedVehicleType: "motorbike" | "sedan" | "van",
+    hasValidLicense: boolean,
+    hasActiveGhanaCard: boolean
+  ) => void;
   // Verification actions
   setDocumentCapture: (
     nationalIdFrontUri: string,
@@ -212,6 +225,7 @@ export type DriverOnboardingState = {
 
 const initialState = {
   currentStep: 0,
+  valueHookCompleted: false,
   yearsExperience: null,
   employmentStatus: null,
   driverGoal: null,
@@ -243,6 +257,9 @@ const initialState = {
   hasCriminalRecord: null as boolean | null,
   criminalRecordDetails: "",
   vehicleTypes: [] as string[],
+  selectedVehicleType: null as "motorbike" | "sedan" | "van" | null,
+  hasValidLicense: false,
+  hasActiveGhanaCard: false,
   vehicleMake: "",
   vehicleModel: "",
   vehicleYear: "",
@@ -297,10 +314,17 @@ export const useDriverOnboardingStore = create<DriverOnboardingState>()(
         set((state) => ({
           documentStorageIds: { ...state.documentStorageIds, ...ids },
         })),
-      setExperience: (yearsExperience) => set({ yearsExperience }),
-      setEmploymentStatus: (employmentStatus) => set({ employmentStatus }),
-      setDriverGoal: (driverGoal) => set({ driverGoal }),
-      setPersonalInfo: (
+setExperience: (yearsExperience) => set({ yearsExperience }),
+  setEmploymentStatus: (employmentStatus) => set({ employmentStatus }),
+  setDriverGoal: (driverGoal) => set({ driverGoal }),
+  setValueHookCompleted: (completed: boolean) => set({ valueHookCompleted: completed }),
+  setQualificationPreCheck: (
+    selectedVehicleType: "motorbike" | "sedan" | "van",
+    hasValidLicense: boolean,
+    hasActiveGhanaCard: boolean
+  ) =>
+    set({ selectedVehicleType, hasValidLicense, hasActiveGhanaCard }),
+  setPersonalInfo: (
         residentialAddress,
         hasCriminalRecord,
         criminalRecordDetails,
@@ -368,7 +392,7 @@ export const useDriverOnboardingStore = create<DriverOnboardingState>()(
       setVerificationMethod: (verificationMethod) =>
         set({ verificationMethod }),
       markOnboardingComplete: () =>
-        set({ onboardingComplete: true, currentStep: 15 }),
+        set({ onboardingComplete: true, currentStep: 16 }),
       markProfileDocumentsUploaded: () =>
         set({ profileDocumentsUploaded: true }),
       reset: () => set(initialState),

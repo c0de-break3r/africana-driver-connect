@@ -12,7 +12,6 @@ import {
 
 import {
     OnboardingOptionRow,
-    PageDots,
     PrimaryButton,
     ScreenContainer,
 } from "@/components/ui";
@@ -132,7 +131,7 @@ export default function RoleQuestion() {
       .setLastCompletedScreen("role-question");
 
     if (selected === "driver") {
-      router.push("/(onboarding)/driver/experience" as Href);
+      router.push("/(onboarding)/driver/value-hook" as Href);
     } else {
       router.push("/(onboarding)/foundational-questions" as Href);
     }
@@ -153,9 +152,7 @@ export default function RoleQuestion() {
           >
             <Text style={styles.backArrow}>‹</Text>
           </Pressable>
-          <View style={styles.dotsWrap}>
-            <PageDots total={5} current={4} />
-          </View>
+          <View style={styles.dotsWrap} />
           <View style={{ width: 40 }} />
         </View>
 

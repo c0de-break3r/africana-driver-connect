@@ -51,7 +51,7 @@ export default function IdCaptureScreen() {
   if (!CameraView || !useCameraPermissions) {
     return (
       <DriverStepShell
-        stepIndex={3}
+        stepIndex={2}
         title="Scan your Ghana Card"
         description="We need the front and back of your National ID to verify your identity."
         buttonTitle="Skip & Continue"
@@ -264,7 +264,7 @@ function CameraIdCapture({
   if (phase === "validating") {
     return (
       <DriverStepShell
-        stepIndex={3}
+        stepIndex={2}
         title="Verifying document"
         description="Checking that the captured image is a valid Ghana Card..."
         buttonTitle=""
@@ -338,7 +338,7 @@ function CameraIdCapture({
   if (phase === "preview") {
     return (
       <DriverStepShell
-        stepIndex={3}
+        stepIndex={2}
         title="Review your Ghana Card"
         description="Make sure both sides are clear and readable."
         buttonTitle="Looks Good — Continue"

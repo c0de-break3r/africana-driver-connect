@@ -89,14 +89,14 @@ export default function VerificationReviewScreen() {
 
     setVerificationPipelineStatus("confirmed");
     setStep(6);
-    router.push("/(onboarding)/driver/personal-info" as Href);
+    router.push("/(onboarding)/driver/vehicle" as Href);
   };
 
   const hasAnyDocuments = nationalIdFrontUri || licenseFrontUri || selfieUri;
 
   return (
     <DriverStepShell
-      stepIndex={6}
+      stepIndex={8}
       title="Review your verification"
       description="Confirm your documents and extracted information before we proceed."
       buttonTitle="Confirm & Continue"

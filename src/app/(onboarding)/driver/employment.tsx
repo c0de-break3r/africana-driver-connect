@@ -22,13 +22,13 @@ export default function EmploymentStatusScreen() {
 
   const handleContinue = () => {
     if (!employmentStatus) return;
-    setStep(2);
+    setStep(4);
     router.push("/(onboarding)/driver/goals" as Href);
   };
 
   return (
     <DriverStepShell
-      stepIndex={1}
+      stepIndex={3}
       title="What's your current employment status?"
       description="We'll tailor the opportunities we show you."
       buttonDisabled={!employmentStatus}

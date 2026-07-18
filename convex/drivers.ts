@@ -159,10 +159,11 @@ export const createProfile = mutation({
       payoutMethod: args.payoutMethod,
       payoutAccountName: args.payoutAccountName,
       payoutAccountNumber: args.payoutAccountNumber,
-      verificationStatus: "pending",
-      totalTrips: 0,
-      createdAt: now,
-      updatedAt: now,
+verificationStatus: "pending",
+    kycStatus: "not_started",
+    totalTrips: 0,
+    createdAt: now,
+    updatedAt: now,
     });
   },
 });
@@ -248,7 +249,7 @@ export const updateProfile = mutation({
 
 /**
  * Update a driver's verification status.
- * Will be called by MetaMap webhook action in the future.
+ * Will be called by Dojah webhook action in the future.
  * For now, can be called by internal functions.
  */
 export const updateVerificationStatus = mutation({

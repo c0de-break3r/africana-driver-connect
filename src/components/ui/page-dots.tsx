@@ -12,6 +12,7 @@ const VISIBLE_DOTS = 5;
 const DOT_SIZE = 8;
 const ACTIVE_WIDTH = 24;
 const INACTIVE_WIDTH = DOT_SIZE;
+const DOT_GAP = 4;
 
 /**
  * Pagination dot indicator — 5 connected dots with a sliding window.
@@ -80,13 +81,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    // No gap — dots touch each other
+    gap: DOT_GAP,
     paddingVertical: 16,
   },
   dot: {
     height: DOT_SIZE,
     borderRadius: DOT_SIZE / 2,
-    // Dots touch: no margin/gap between them
   },
   dotActive: {
     backgroundColor: "#2C3E5B",

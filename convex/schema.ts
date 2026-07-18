@@ -103,6 +103,15 @@ export default defineSchema({
       v.literal("verified"),
       v.literal("rejected"),
     ),
+    kycStatus: v.union(
+      v.literal("not_started"),
+      v.literal("in_progress"),
+      v.literal("submitted"),
+      v.literal("pending_review"),
+      v.literal("verified"),
+      v.literal("rejected"),
+      v.literal("expired"),
+    ),
     rating: v.optional(v.float64()),
     totalTrips: v.number(),
     createdAt: v.number(),
@@ -244,6 +253,7 @@ export default defineSchema({
       v.literal("submitted"),
       v.literal("verified"),
       v.literal("rejected"),
+      v.literal("expired"),
     ),
     providerId: v.optional(v.string()),
     // Document storage references
