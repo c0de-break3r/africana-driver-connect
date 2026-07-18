@@ -4,13 +4,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useKycFlowStore } from "@/store/useKycFlowStore";
 import { Ionicons } from "@expo/vector-icons";
 
+function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
+}
+
 export default function KycIntroScreen() {
   const { setStep, setConsentGiven } = useKycFlowStore();
 
   const handleStart = () => {
-    setConsentGiven(false);
-    setStep(2);
-    router.push("/(onboarding)/driver/kyc-document-scan" as any);
+    try {
+      setConsentGiven(false);
+      setStep(2);
+      router.push("/(onboarding)/driver/kyc-document-scan" as any);
+    } catch (error) {
+      console.error("KYC navigation error:", error);
+    }
   };
 
   return (

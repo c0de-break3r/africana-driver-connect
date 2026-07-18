@@ -1,6 +1,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+const DOJAH_BASE_URL = "https://api.dojah.io";
+
 /**
  * Submit KYC documents to Dojah for verification
  * Stores document URIs and initiates verification process
@@ -36,6 +38,22 @@ export const submitKycDocuments = mutation({
 
     const verificationId = `verif_${Date.now()}`;
 
+    // Call Dojah API
+    const dojahResponse = await fetch(`${DOJAH_BASE_URL}/v1/verification/document`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`${process.env.DOJAH_APP_ID}:${process.env.DOJAH_SECRET_KEY}`).toString("base64")}`,
+      },
+      body: JSON.stringify({
+        document_type: args.documentType,
+        document_front: args.documentFrontUri,
+        document_back: args.documentBackUri,
+      }),
+    });
+
+    const dojahData = await dojahResponse.json();
+
     const storageFields: Record<string, string | undefined> = {};
     if (args.documentType === "national_id") {
       storageFields.nationalIdFrontStorageId = args.documentFrontUri;
@@ -57,7 +75,7 @@ export const submitKycDocuments = mutation({
       type: args.documentType === "national_id" ? "national_id" : "license",
       provider: "dojah",
       status: "submitted",
-      providerId: verificationId,
+      providerId: dojahData?.entity_id || verificationId,
       frontStorageId: args.documentFrontUri,
       backStorageId: args.documentBackUri,
       submittedAt: Date.now(),
@@ -71,11 +89,17 @@ export const submitKycDocuments = mutation({
 });
 
 /**
- * Submit selfie for facial verification
+ * Submit selfie for facial verification via Dojah
  */
 export const submitSelfie = mutation({
   args: {
     selfieUri: v.string(),
+    documentFrontUri: v.string(),
+    documentType: v.union(
+      v.literal("passport"),
+      v.literal("drivers_license"),
+      v.literal("national_id"),
+    ),
   },
   returns: v.object({
     verificationId: v.string(),
@@ -98,9 +122,27 @@ export const submitSelfie = mutation({
 
     const verificationId = `liveness_${Date.now()}`;
 
+    // Call Dojah Biometric API
+    const dojahResponse = await fetch(`${DOJAH_BASE_URL}/v1/verification/biometric`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Basic ${Buffer.from(`${process.env.DOJAH_APP_ID}:${process.env.DOJAH_SECRET_KEY}`).toString("base64")}`,
+      },
+      body: JSON.stringify({
+        selfie: args.selfieUri,
+        document_type: args.documentType,
+        document_number: driver.licenseNumber || "",
+      }),
+    });
+
+    const dojahData = await dojahResponse.json();
+
     await ctx.db.patch(driver._id, {
       selfieStorageId: args.selfieUri,
       kycStatus: "submitted",
+      faceMatchPassed: dojahData?.data?.face_match_score > 80 ? true : false,
+      faceMatchConfidence: dojahData?.data?.face_match_score,
     });
 
     await ctx.db.insert("verifications", {
@@ -226,5 +268,65 @@ export const getDriverKycStatus = query({
       faceMatchPassed: driver.faceMatchPassed ?? null,
       faceMatchConfidence: driver.faceMatchConfidence ?? null,
     };
+  },
+});
+
+/**
+ * Dojah webhook handler for verification updates
+ * Called by Dojah when verification status changes
+ */
+export const handleDojahWebhook = mutation({
+  args: {
+    entityId: v.string(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("verified"),
+      v.literal("rejected"),
+      v.literal("failed"),
+    ),
+    data: v.optional(v.any()),
+  },
+  returns: v.null,
+  handler: async (ctx, args) => {
+    const verification = await ctx.db
+      .query("verifications")
+      .withIndex("by_provider_id", (q) => q.eq("providerId", args.entityId))
+      .first();
+
+    if (!verification) {
+      console.warn(`Verification not found for entity: ${args.entityId}`);
+      return null;
+    }
+
+    // Map Dojah status to our status
+    const statusMap: Record<string, string> = {
+      pending: "pending_review",
+      verified: "verified",
+      rejected: "rejected",
+      failed: "rejected",
+    };
+
+    const mappedStatus = statusMap[args.status] || "pending_review";
+
+    await ctx.db.patch(verification._id, {
+      status: mappedStatus,
+      completedAt: mappedStatus === "verified" || mappedStatus === "rejected" ? Date.now() : undefined,
+      extractedData: args.data ? JSON.stringify(args.data) : undefined,
+    });
+
+    // Update driver status
+    const driver = await ctx.db
+      .query("drivers")
+      .withIndex("by_user", (q) => q.eq("userId", verification.userId))
+      .first();
+
+    if (driver) {
+      await ctx.db.patch(driver._id, {
+        kycStatus: mappedStatus as any,
+        updatedAt: Date.now(),
+      });
+    }
+
+    return null;
   },
 });
