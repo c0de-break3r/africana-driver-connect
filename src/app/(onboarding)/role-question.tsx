@@ -131,7 +131,7 @@ export default function RoleQuestion() {
       .setLastCompletedScreen("role-question");
 
     if (selected === "driver") {
-      router.push("/(onboarding)/driver/value-hook" as Href);
+      router.push("/(onboarding)/driver/kyc-intro" as Href);
     } else {
       router.push("/(onboarding)/foundational-questions" as Href);
     }

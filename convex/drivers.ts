@@ -96,6 +96,17 @@ export const createProfile = mutation({
     payoutMethod: v.optional(v.string()),
     payoutAccountName: v.optional(v.string()),
     payoutAccountNumber: v.optional(v.string()),
+    kycStatus: v.optional(
+      v.union(
+        v.literal("not_started"),
+        v.literal("in_progress"),
+        v.literal("submitted"),
+        v.literal("pending_review"),
+        v.literal("verified"),
+        v.literal("rejected"),
+        v.literal("expired"),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
@@ -158,9 +169,9 @@ export const createProfile = mutation({
       violationDetails: args.violationDetails,
       payoutMethod: args.payoutMethod,
       payoutAccountName: args.payoutAccountName,
-      payoutAccountNumber: args.payoutAccountNumber,
-verificationStatus: "pending",
-    kycStatus: "not_started",
+payoutAccountNumber: args.payoutAccountNumber,
+    verificationStatus: "pending",
+    kycStatus: args.kycStatus ?? "not_started",
     totalTrips: 0,
     createdAt: now,
     updatedAt: now,

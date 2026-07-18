@@ -1,8 +1,9 @@
-import { Link, router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Link, router, useFocusEffect } from "expo-router";
+import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useKycFlowStore } from "@/store/useKycFlowStore";
 import { Ionicons } from "@expo/vector-icons";
+import { useCallback } from "react";
 
 function ErrorBoundary({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
@@ -46,6 +47,10 @@ export default function KycIntroScreen() {
             Your data is encrypted, used only for identity verification, and deleted after 90 days.
           </Text>
         </View>
+
+        <Pressable style={styles.continueBtn} onPress={handleStart}>
+          <Text style={styles.continueText}>Continue →</Text>
+        </Pressable>
 
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <Text style={styles.backText}>← Back</Text>
@@ -170,7 +175,21 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 14,
-    color: "#2C3E5B",
+    color: "#6E7E91",
     fontWeight: "500",
+  },
+  continueBtn: {
+    backgroundColor: "#FF7B54",
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  continueText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
 });
