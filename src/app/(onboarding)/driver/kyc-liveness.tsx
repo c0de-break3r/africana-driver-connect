@@ -76,8 +76,8 @@ export default function KycLivenessScreen() {
 
         <View style={styles.indicators}>
           <Indicator icon="sunny" label="Good light" active={true} />
-          <Indicator icon="hand-paper" label="Stay still" active={true} />
-          <Indicator icon="face" label="Face forward" active={true} />
+          <Indicator icon="hand-lift" label="Stay still" active={true} />
+          <Indicator icon="person" label="Face forward" active={true} />
         </View>
 
         <Pressable style={styles.captureBtn} onPress={handleCapture} disabled={processing}>

@@ -19,3 +19,18 @@
 // 4. Webhook → Convex HTTP endpoint → update verification status
 //
 // Reference: https://docs.dojah.io/overview/quickstart
+
+/**
+ * Dojah API base URL
+ */
+export const DOJAH_BASE_URL = "https://api.dojah.io";
+
+/**
+ * Dojah verification statuses mapped to our internal statuses
+ */
+export const DOJAH_STATUS_MAP = {
+  pending: "pending_review",
+  verified: "verified",
+  rejected: "rejected",
+  failed: "rejected",
+} as const;

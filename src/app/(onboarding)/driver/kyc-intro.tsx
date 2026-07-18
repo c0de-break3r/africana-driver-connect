@@ -1,13 +1,8 @@
-import { Link, router, useFocusEffect } from "expo-router";
-import { Pressable, StyleSheet, Text, View, ScrollView } from "react-native";
+import { router } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useKycFlowStore } from "@/store/useKycFlowStore";
 import { Ionicons } from "@expo/vector-icons";
-import { useCallback } from "react";
-
-function ErrorBoundary({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
-}
 
 export default function KycIntroScreen() {
   const { setStep, setConsentGiven } = useKycFlowStore();
@@ -32,12 +27,12 @@ export default function KycIntroScreen() {
         <Text style={styles.title}>Verify your identity</Text>
 
         <Text style={styles.subtitle}>
-          It takes about 2 minutes to verify your identity. We need to confirm it's really you before you can start accepting rides.
+          It takes about 2 minutes to verify your identity. We need to confirm it&apos;s really you before you can start accepting rides.
         </Text>
 
         <View style={styles.checklist}>
           <ChecklistItem number={1} title="Scan your ID" description="Passport, driving licence, or national ID card" />
-          <ChecklistItem number={2} title="Take a selfie" description="We'll match your face to your ID photo" />
+          <ChecklistItem number={2} title="Take a selfie" description="We&apos;ll match your face to your ID photo" />
           <ChecklistItem number={3} title="Get verified" description="Usually instant, sometimes a few hours" />
         </View>
 
@@ -69,7 +64,9 @@ type ChecklistItemProps = {
 function ChecklistItem({ number, title, description }: ChecklistItemProps) {
   return (
     <View style={styles.checklistItem}>
-      <View style={styles.checklistNumber}>{number}</View>
+      <View style={styles.checklistNumber}>
+        <Text style={styles.checklistNumberText}>{number}</Text>
+      </View>
       <View style={styles.checklistContent}>
         <Text style={styles.checklistTitle}>{title}</Text>
         <Text style={styles.checklistDesc}>{description}</Text>
@@ -175,7 +172,7 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 14,
-    color: "#6E7E91",
+    color: "#2C3E5B",
     fontWeight: "500",
   },
   continueBtn: {

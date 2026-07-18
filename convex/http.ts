@@ -21,7 +21,7 @@ const dojahWebhook = httpAction(async (ctx, req) => {
   }
 
   // Call the internal webhook handler
-  await ctx.runInternalMutation(internal.kyc.handleDojahWebhook, {
+  await ctx.runMutation(internal.kyc.handleDojahWebhook, {
     entityId,
     status,
     data: data ? JSON.stringify(data) : undefined,

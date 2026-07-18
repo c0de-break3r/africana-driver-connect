@@ -18,10 +18,6 @@ export const submitKycDocuments = mutation({
       v.literal("national_id"),
     ),
   },
-  returns: v.object({
-    verificationId: v.string(),
-    status: v.literal("submitted"),
-  }),
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -92,7 +88,7 @@ export const submitKycDocuments = mutation({
 
     return {
       verificationId,
-      status: "submitted",
+      status: "submitted" as "submitted",
     };
   },
 });
@@ -110,10 +106,6 @@ export const submitSelfie = mutation({
       v.literal("national_id"),
     ),
   },
-  returns: v.object({
-    verificationId: v.string(),
-    status: v.literal("submitted"),
-  }),
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -174,7 +166,7 @@ export const submitSelfie = mutation({
 
     return {
       verificationId,
-      status: "submitted",
+      status: "submitted" as "submitted",
     };
   },
 });
@@ -197,7 +189,6 @@ export const updateKycStatus = mutation({
     ),
     failureReason: v.optional(v.string()),
   },
-  returns: v.null,
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -214,9 +205,19 @@ export const updateKycStatus = mutation({
       throw new Error("Unauthorized");
     }
 
+    // Map status to verification status
+    const newVerificationStatus: "pending" | "in_progress" | "submitted" | "pending_review" | "verified" | "rejected" | "expired" = 
+      args.status === "verified" 
+        ? "verified" 
+        : args.status === "rejected" 
+          ? "rejected" 
+          : args.status === "expired" 
+            ? "expired" 
+            : "pending_review";
+
     await ctx.db.patch(verification._id, {
-      status: args.status === "verified" ? "verified" : args.status === "rejected" ? "rejected" : args.status === "expired" ? "expired" : "pending_review",
-      completedAt: args.status === "verified" || args.status === "rejected" || args.status === "expired" ? Date.now() : undefined,
+      status: newVerificationStatus,
+      completedAt: newVerificationStatus === "verified" || newVerificationStatus === "rejected" ? Date.now() : undefined,
       rejectionReason: args.failureReason,
     });
 
@@ -241,19 +242,6 @@ export const updateKycStatus = mutation({
  */
 export const getDriverKycStatus = query({
   args: {},
-  returns: v.object({
-    kycStatus: v.union(
-      v.literal("not_started"),
-      v.literal("in_progress"),
-      v.literal("submitted"),
-      v.literal("pending_review"),
-      v.literal("verified"),
-      v.literal("rejected"),
-      v.literal("expired"),
-    ),
-    faceMatchPassed: v.union(v.boolean(), v.null()),
-    faceMatchConfidence: v.union(v.float64(), v.null()),
-  }),
   handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx);
 
@@ -264,7 +252,7 @@ export const getDriverKycStatus = query({
 
     if (!driver) {
       return {
-        kycStatus: "not_started",
+        kycStatus: "not_started" as const,
         faceMatchPassed: null,
         faceMatchConfidence: null,
       };
@@ -292,9 +280,8 @@ export const handleDojahWebhook = internalMutation({
       v.literal("rejected"),
       v.literal("failed"),
     ),
-    data: v.optional(v.any()),
+    data: v.optional(v.string()),
   },
-  returns: v.null,
   handler: async (ctx, args) => {
     const verification = await ctx.db
       .query("verifications")
@@ -316,9 +303,12 @@ export const handleDojahWebhook = internalMutation({
 
     const mappedStatus = statusMap[args.status] || "pending_review";
 
+    const newVerificationStatus: "pending" | "pending_review" | "verified" | "rejected" | "expired" = 
+      mappedStatus as "pending" | "pending_review" | "verified" | "rejected" | "expired";
+
     await ctx.db.patch(verification._id, {
-      status: mappedStatus,
-      completedAt: mappedStatus === "verified" || mappedStatus === "rejected" ? Date.now() : undefined,
+      status: newVerificationStatus,
+      completedAt: newVerificationStatus === "verified" || newVerificationStatus === "rejected" ? Date.now() : undefined,
       extractedData: args.data ? JSON.stringify(args.data) : undefined,
     });
 
