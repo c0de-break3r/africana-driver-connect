@@ -26,10 +26,16 @@ export function AuthBackButton({ opacity, goBack }: AuthBackButtonProps) {
       return;
     }
 
-    if (goBack === "welcome") {
-      router.replace("/(onboarding)/welcome" as Href);
-    } else {
-      router.replace("/(auth)/sign-in" as Href);
+    // Try back first - slides from left when there IS a navigation stack
+    try {
+      router.back();
+    } catch {
+      // Fallback: route explicitly to welcome or sign-in
+      if (goBack === "welcome") {
+        router.replace("/(onboarding)/welcome" as Href);
+      } else {
+        router.replace("/(auth)/sign-in" as Href);
+      }
     }
   };
 

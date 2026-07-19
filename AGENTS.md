@@ -395,6 +395,48 @@ Ask if unsure.
 
 ---
 
+## Navigation & Animation Rules (VERY IMPORTANT)
+
+Use Expo Router's Stack navigator for screen transitions with horizontal slide animations:
+
+```tsx
+// In _layout.tsx
+import { Stack } from "expo-router";
+
+export default function OnboardingLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: true,
+        animation: "slide_from_right",
+      }}
+    />
+  );
+}
+```
+
+Back navigation patterns:
+
+```tsx
+// ✅ CORRECT - Use router.back() for slide-back animation
+import { router } from "expo-router";
+
+// Go back (will slide from left if coming from previous screen)
+router.back();
+
+// Navigation with slide-from-right animation
+router.push("/(onboarding)/driver/kyc-intro" as Href);
+```
+
+Animation types available in Expo Router:
+- `"slide_from_right"` - Forward navigation slides in from right (default)
+- `"slide_from_left"` - Back navigation slides in from left
+- `"fade_from_center"` - Fade in from center
+- `"none"` - No animation
+
+---
+
 ## Linting and Validation
 
 Run:
