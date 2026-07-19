@@ -6,8 +6,8 @@ export type AuthBackButtonProps = {
   opacity: Animated.Value;
   /**
    * Where to navigate on back press.
-   * - `"welcome"` → goes to Welcome screen (with canGoBack guard)
-   * - `"sign-in"` → goes to sign-in screen (with canGoBack guard)
+   * - `"welcome"` → goes to Welcome screen
+   * - `"sign-in"` → goes to sign-in screen
    * - Custom function for full control
    */
   goBack: "welcome" | "sign-in" | (() => void);
@@ -17,12 +17,7 @@ export type AuthBackButtonProps = {
  * Consistent back button for auth screens.
  *
  * Positioned absolute top-left with staggered entrance animation.
- * Back navigation logic:
- * - `welcome`: if `from=welcome` → replace to welcome, else canGoBack() or fallback
- * - `sign-in`: canGoBack() or replace to sign-in
- * - Custom function: full control
- *
- * Uses StyleSheet per AGENTS.md exception rules for animated styles + Pressable.
+ * Back navigation logic always includes a fallback route.
  */
 export function AuthBackButton({ opacity, goBack }: AuthBackButtonProps) {
   const handlePress = () => {
@@ -32,19 +27,9 @@ export function AuthBackButton({ opacity, goBack }: AuthBackButtonProps) {
     }
 
     if (goBack === "welcome") {
-      // If came from welcome screen, go back there
-      if (router.canGoBack()) {
-        router.back();
-      } else {
-        router.replace("/(onboarding)/welcome" as Href);
-      }
+      router.replace("/(onboarding)/welcome" as Href);
     } else {
-      // sign-in fallback
-      if (router.canGoBack()) {
-        router.back();
-      } else {
-        router.replace("/(auth)/sign-in" as Href);
-      }
+      router.replace("/(auth)/sign-in" as Href);
     }
   };
 
