@@ -67,8 +67,15 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    alignItems: "center",
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
     justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   backBtnText: {
     fontSize: 24,

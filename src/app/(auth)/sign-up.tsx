@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
     AuthBackButton,
@@ -37,7 +38,7 @@ export default function SignUp() {
   /* ── OTP Verification Phase ── */
   if (flow.pendingVerification) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#FFF8F3" }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF8F3" }} edges={["top"]}>
         <AuthBackButton opacity={entrance.headerOpacity} goBack="welcome" />
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -128,13 +129,13 @@ export default function SignUp() {
 
           <View nativeID="clerk-captcha" />
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
   /* ── Sign-up Form Phase ── */
   return (
-    <View style={{ flex: 1, backgroundColor: "#FFF8F3" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF8F3" }} edges={["top"]}>
       <AuthBackButton opacity={entrance.headerOpacity} goBack="welcome" />
 
       <ScrollView
@@ -220,7 +221,7 @@ export default function SignUp() {
 
         <View nativeID="clerk-captcha" />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

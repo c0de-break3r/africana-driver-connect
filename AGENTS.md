@@ -1,308 +1,448 @@
-# Tech Stack
+You are an expert React Native + Expo engineer helping build a production-quality teaching project.
 
-## Mobile
+You write clean, simple, maintainable code. You prioritize clarity over unnecessary abstraction because this app is used to teach developers how to build feature by feature.
 
-- React Native
+You should think like a senior mobile developer, but explain and implement like someone building a practical learning project.
+
+---
+
+## Project Overview
+
+We are building a Duolingo-inspired AI language learning mobile app using Expo.
+
+The app teaches users languages through interactive lessons that may include:
+
+- video-based AI teacher lessons
+- audio lessons
+- chat-based AI tutor lessons
+- vocabulary review
+- local XP and lesson completion
+- language selection
+- beautiful mobile-first UI inspired by playful learning apps
+
+This is primarily a learning project. The goal is to teach developers how to build a modern AI-powered Expo app feature by feature.
+
+---
+
+## Tech Stack
+
+Use the following stack:
+
 - Expo
-- TypeScript (Strict Mode)
+- React Native
+- TypeScript
 - Expo Router
-
-## UI
-
-- NativeWind
-- Tailwind CSS
-- React Native Reanimated
-- React Native Gesture Handler
-- React Native SVG
-- Expo Blur
-- Expo Image
-- Expo Vector Icons
-
-## Backend
-
-Primary backend:
-
-- Convex
-
-Use Convex for:
-
-- Database
-- Real-time synchronization
-- Queries
-- Mutations
-- Actions
-- File metadata
-- Business logic
-
-Avoid creating unnecessary REST endpoints when Convex functions are sufficient.
-
-## Authentication
-
-- Clerk
-
-Supported providers:
-
-- Email
-- Phone Number (OTP)
-- Google
-- Apple
-
-Authentication should integrate with Convex.
-
-## State Management
-
+- NativeWind / Tailwind CSS
 - Zustand
-- TanStack Query (if needed for external APIs)
-
-## Storage
-
 - AsyncStorage
-- Convex Storage (metadata)
-- External object storage for large files when required
+- Clerk for authentication
+- Stream / GetStream for video and real-time communication
+- Stream Vision Agents for AI video teacher capability
+- Server-side API routes or backend functions for secrets, tokens, and AI calls
 
-## Identity Verification
+Do not introduce new major libraries unless there is a strong reason.
 
-- Dojah (https://docs.dojah.io/overview/quickstart)
+---
 
-Important:
+## Development Philosophy
 
-This application DOES NOT use Dojah's hosted verification UI.
+Build feature by feature.
 
-Instead:
+For every feature:
 
-- Build the entire KYC flow using our own React Native UI.
-- Use Dojah APIs only.
-- Use Dojah SDK only where absolutely necessary.
-- All onboarding screens, forms, progress indicators, and success states belong to Africana Driver Connect.
+1. Understand the user request.
+2. Check this file before coding.
+3. Keep the implementation simple.
+4. Avoid overengineering.
+5. Prefer readable code over clever code.
+6. Build the smallest useful version first.
+7. Refactor only when repetition or complexity appears.
+8. Keep the app easy to teach and explain.
 
-Dojah is responsible only for:
+This project should feel like a real app, but remain approachable for students.
 
-- Verification session creation
-- Document processing
-- Identity verification
-- Face verification
-- Webhooks
-- Verification results
+---
 
-Never redirect users into Dojah's default experience unless explicitly requested.
+## Decision Making & Clarifications
 
-## Maps
+If something is unclear or could be improved:
 
-- Google Maps
-- Google Places API
-- react-native-maps
+- Proactively suggest better approaches
+- If a new library would significantly simplify or improve the implementation:
+  - Recommend the library
+  - Clearly explain why it is useful
+  - Ask the user for permission before adding or installing it
 
-Features:
+Example:
 
-- Live GPS
-- Geofencing
-- Route visualization
-- Nearby search
-- Driver tracking
+> "This could be implemented manually, but using `react-native-reanimated` would make animations smoother. Do you want me to add it?"
 
-## Notifications
+Do not install or use new libraries without user approval.
 
-- Expo Notifications
-- Firebase Cloud Messaging
-- APNs
+---
 
-## Payments
+## Architecture Guidelines
 
-Architecture must support:
+Use this structure unless there is a strong reason to change it:
 
-- Paystack
-- Flutterwave
-- Stripe
-- MTN MoMo
-- Vodafone Cash
-- AirtelTigo Money
+```txt
+app/
+  (auth)/
+  (tabs)/
+  lesson/
+components/
+constants/
+data/
+hooks/
+lib/
+store/
+types/
+assets/
+```
 
-Never tightly couple the codebase to one provider.
+### app/
 
-Create a payment abstraction layer.
+Use this for routes and screens only.
 
-## AI
+Screens should compose components and call hooks/stores, but should not contain large reusable UI blocks or complex business logic.
 
-Primary provider:
+### components/
 
-- Anthropic Claude
+Create a component only when:
 
-Future support:
+- it is reused in multiple places
+- it makes a screen easier to read
+- it represents a clear UI concept like `LessonCard`, `XPBar`, `LanguageCard`, or `PrimaryButton`
 
-- OpenAI
-- Gemini
+Do not create tiny one-off components too early.
 
-All AI requests MUST go through backend functions.
+When unsure, ask:
 
-Never expose API keys.
+> Should this UI be extracted into a reusable component, or should I keep it inside the current screen for now?
 
-## Analytics
+---
 
-Support future integration with:
+## UI Implementation Rules (VERY IMPORTANT)
 
-- Firebase Analytics
-- PostHog
-- Mixpanel
+For any UI-related task:
 
-## Error Monitoring
+- The goal is to **replicate the provided design exactly**
+- Match the UI **pixel-perfectly**
 
-- Sentry
+When the user provides a design image:
 
-## Testing
+You MUST:
 
-- Jest
-- React Native Testing Library
-- Detox (future)
+- match layout exactly
+- match spacing and padding
+- match font sizes and hierarchy
+- match colors precisely
+- match border radius and shadows
+- match alignment and positioning
+- match proportions of elements
+- replicate all visible UI elements
 
+Do not approximate. Do not simplify unless explicitly asked.
 
-# Architecture Principles
+---
 
-Every feature should follow this flow.
+## Image Generation Rules
 
-UI Screen
+If the user enables image generation:
 
-↓
+- Generate images that are **visually identical or extremely close** to the provided UI reference
+- Do not change style, colors, or composition
+- Keep consistency with the design system
 
-Reusable Components
+After generating images:
 
-↓
+- Place them inside the `assets/` folder
+- Use clear and organized naming:
 
-Hooks
+```txt
+assets/images/
+  onboarding-illustration.png
+  mascot-happy.png
+```
 
-↓
+Use these assets properly in the UI.
 
-Stores (Zustand)
+---
 
-↓
+## Styling Rules
 
-Convex Queries / Mutations / Actions
+Use NativeWind tailwindcss classes for styling strictly. Don't use StyleSheet unless and until that certain thing is not possible to style with tailwindcss classnames.
 
-↓
+Prioritize clean, readable mobile UI.
 
-External Services
+When building from an attached design image:
 
-Business logic should never live inside screens.
+- match spacing closely
+- match typography hierarchy
+- match border radius and shadows
+- match layout structure
+- use consistent reusable styles
+- make the UI responsive for different screen sizes
 
-Screens should remain as thin as possible.
+Prefer reusable class patterns through utilities in `global.css`. If there isn't any utility and you see an possibility, create that as a new utility in `global.css` by following BEM method.
 
+## Avoid large inline styles unless required.
 
-# Revenue Architecture
+## NativeWind Rule
 
-The application has two primary revenue streams.
+Use the NativeWind version already installed in this app.
 
-## Subscription Engine
+Before implementing styling or NativeWind-related code:
 
-Support:
+- Check the current NativeWind version in `package.json`
+- Follow the syntax, setup, and patterns supported by that exact version
+- Do not use APIs, config patterns, or examples from a different NativeWind version
+- Do not upgrade NativeWind unless the user explicitly approves it
 
-- Driver Premium
-- Owner Premium
-- Fleet Premium
+Refer this for more info: https://www.nativewind.dev/v5/llms-full.txt
 
-The subscription engine must support:
+---
 
-- Feature flags
-- Pricing changes
-- Regional pricing
-- Promotional discounts
-- Free trials
+## Style Exception Rules
 
-Never hardcode pricing.
+Use `StyleSheet` or inline styles for these React Native components/scenarios instead of NativeWind/tailwindcss classes:
 
-## Commission Engine
+| Component / Scenario           | Why                                                                                      | Use Instead                           |
+| ------------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------- |
+| **SafeAreaView**               | From `react-native` or `react-native-safe-area-context` — className not supported        | Inline styles or `StyleSheet`         |
+| **Button**                     | Only supports `title` and `onPress` props — cannot customize background, border, padding | `TouchableOpacity` with custom styles |
+| **KeyboardAvoidingView**       | Behavior props not supported by className                                                | Inline styles or `StyleSheet`         |
+| **Modal**                      | `visible`, `transparent` props                                                           | Inline styles                         |
+| **ScrollView**                 | `contentContainerStyle`, `indicatorStyle`                                                | `StyleSheet`                          |
+| **TextInput**                  | Input-specific props like `underlineColorAndroid`                                        | Inline styles                         |
+| **Animated.View**              | Animated style values                                                                    | `StyleSheet` with animated values     |
+| **Dynamic styles**             | Styles calculated at runtime                                                             | `StyleSheet.create()` or inline       |
+| **Platform-specific**          | iOS-only or Android-only props                                                           | Conditional inline styles             |
+| **Pressable/TouchableOpacity** | `style` prop for pressed states                                                          | `StyleSheet`                          |
+| **Shadow (iOS/Android)**       | Different shadow syntax per platform                                                     | `StyleSheet` with platform checks     |
+| **Transform arrays**           | Complex transform combinations                                                           | `StyleSheet`                          |
+| **Z-index**                    | Sometimes needs explicit StyleSheet                                                      | `StyleSheet`                          |
 
-Commission calculations must be centralized.
+### When to Use StyleSheet
 
-Support:
+Use `StyleSheet` or inline styles when:
 
-- Percentage
-- Flat fee
-- Promotional rules
-- Future configurable policies
+- The prop is React Native-specific (not web-equivalent)
+- The value is dynamic/calculated at runtime
+- Platform-specific behavior is needed
+- NativeWind doesn't map the property to a style
 
-Never calculate commissions inside screens.
+### SafeAreaView Example
 
+```tsx
+// ✅ CORRECT - Use inline styles or StyleSheet
+import { SafeAreaView } from "react-native-safe-area-context";
 
-# Dojah Rules
+function MyScreen() {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* content */}
+    </SafeAreaView>
+  );
+}
 
-Africana Driver Connect owns the entire verification experience.
+// ❌ INCORRECT - Do not use NativeWind/tailwindcss classes
+function MyScreen() {
+  return (
+    <SafeAreaView className="flex-1 bg-white">{/* content */}</SafeAreaView>
+  );
+}
+```
 
-Never use:
+And similar for above mentioned exception components. Otherwise, alaways stick to nativewind utilities.
 
-- Dojah hosted UI
-- Dojah onboarding screens
-- Dojah verification screens
+---
 
-Instead:
+## Image Rule
 
-Our application builds:
+Use centralized image imports.
 
-- Welcome
-- Instructions
-- Upload document
-- Selfie capture
-- Progress
-- Processing
-- Success
-- Failure
-- Retry
-- Pending review
+Before using any image asset:
 
-Only communicate with Dojah through their APIs.
+1. Check if `constants/images.ts` exists.
+2. If it does not exist, create it.
+3. Import and export all app images from `constants/images.ts`.
+4. Use images through the centralized object.
 
-Verification status should be synchronized into Convex.
+Example:
 
-Possible statuses:
+```ts
+import mascot from "@/assets/images/mascot.png";
+import mascotLogo from "@/assets/images/mascot-logo.png";
 
-- not_started
-- in_progress
-- submitted
-- pending_review
-- verified
-- rejected
-- expired
+export const images = {
+  mascot,
+  mascotLogo,
+};
+```
 
-Never expose Dojah credentials on the client.
+Use images like this,
 
+```tsx
+<Image source={images.mascot} />
+```
 
-# Convex Rules
+Do not require/import image assets directly inside screens or components unless there is a strong reason.
 
-Convex is the primary backend.
+---
 
-Use Convex for:
 
-- Database
-- Authentication integration
-- Queries
-- Mutations
-- Actions
-- Real-time subscriptions
 
-Prefer:
+## store/
 
-Query
+Use Zustand stores here.
 
-↓
+Use Zustand for:
 
-Mutation
+- onboarding flow settings
+- completed lessons
+- current users state
+- app settings
 
-↓
+Use AsyncStorage persistence where needed.
 
-Action
+---
 
-Avoid duplicating business logic between the client and Convex.
+## lib/
 
-The client should consume Convex functions rather than implementing business rules locally.
+Use this for external service helpers.
 
-<!-- convex-ai-start -->
+Examples:
 
-This project uses [Convex](https://convex.dev) as its backend.
+```txt
+lib/
+  clerk.ts
+  stream.ts
+  api.ts
+  cn.ts
+```
 
-When working on Convex code, **always read
-`convex/_generated/ai/guidelines.md` first** for important guidelines on
-how to correctly use Convex APIs and patterns. The file contains rules that
-override what you may have learned about Convex from training data.
+Never expose secret keys in the mobile app.
 
-Convex agent skills for common tasks can be installed by running
-`npx convex ai-files install`.
+---
 
-<!-- convex-ai-end -->
+## State Management Rules
+
+Use Zustand for global client state.
+
+Use local state for temporary UI state.
+
+Persist using AsyncStorage when needed.
+
+---
+
+## TypeScript Rules
+
+Use TypeScript strictly.
+
+Avoid `any`.
+
+Keep types simple and readable.
+
+---
+
+## Feature Implementation Rules
+
+When the user asks to build a feature:
+
+1. Read this file first.
+2. Identify files to change.
+3. Keep changes focused.
+4. Do not rewrite unrelated code.
+5. Follow existing patterns.
+6. Ensure feature works end-to-end.
+7. Fix errors before finishing.
+
+---
+
+## AI + Google Maps Rules
+
+Use backend/serverless for:
+
+- Stream tokens
+- AI calls
+- Vision Agent sessions
+
+Never expose secrets in the frontend.
+
+---
+
+## Clerk Rules
+
+Use Clerk for authentication.
+
+Do not build custom auth.
+
+---
+
+## Lesson Content Rules
+
+Use hardcoded JSON/TS for lessons.
+
+Do not introduce a database unless explicitly requested.
+
+---
+
+## Code Simplicity Rules
+
+Avoid overengineering.
+
+Refactor only when needed.
+
+---
+
+## Component Creation Rule
+
+Only create reusable components when necessary.
+
+Ask if unsure.
+
+---
+
+## Linting and Validation
+
+Run:
+
+```bash
+bun run lint
+bun run typecheck
+```
+
+Fix errors.
+
+---
+
+## Communication Style
+
+Be concise.
+
+Explain what changed and how to test.
+
+---
+
+## Important Constraints
+
+No database for this version.
+
+Use:
+
+- JSON for content
+- Zustand for state
+- AsyncStorage for persistence
+- backend only for secure operations
+
+---
+
+## Final Reminder
+
+Before every feature implementation:
+
+- Read this file
+- Follow it strictly
+- Build clean, simple, teachable code
+- Replicate UI exactly when designs are provided

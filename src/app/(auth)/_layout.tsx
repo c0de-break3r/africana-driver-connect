@@ -28,5 +28,13 @@ export default function AuthLayout() {
     return <Redirect href={getPostAuthRoute(role)} />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        gestureEnabled: true,
+        animation: "slide_from_right",
+      }}
+    />
+  );
 }

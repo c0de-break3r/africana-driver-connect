@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
     AuthBackButton,
@@ -35,7 +36,7 @@ export default function SignIn() {
   const flow = useSignInFlow();
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#FFF8F3" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF8F3" }} edges={["top"]}>
       {/* ── Back button ── */}
       <AuthBackButton opacity={entrance.headerOpacity} goBack="welcome" />
 
@@ -125,7 +126,7 @@ export default function SignIn() {
           <AuthFooter variant="sign-up-link" from={from} />
         </Animated.View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

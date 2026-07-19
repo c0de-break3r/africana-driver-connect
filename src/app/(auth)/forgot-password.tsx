@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AuthBackButton, AuthFooter, AuthInput } from "@/components/ui";
 import { images } from "@/constants/images";
@@ -27,7 +28,7 @@ export default function ForgotPassword() {
   const reset = usePasswordReset();
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#FFF8F3" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF8F3" }} edges={["top"]}>
       {/* ── Back button ── */}
       <AuthBackButton
         opacity={entrance.headerOpacity}
@@ -160,7 +161,7 @@ export default function ForgotPassword() {
           <AuthFooter variant="forgot-password-link" />
         </Animated.View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 

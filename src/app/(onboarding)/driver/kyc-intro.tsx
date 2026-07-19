@@ -7,11 +7,15 @@ import { Ionicons } from "@expo/vector-icons";
 export default function KycIntroScreen() {
   const { setStep, setConsentGiven } = useKycFlowStore();
 
+  const handleBack = () => {
+    router.back();
+  };
+
   const handleStart = () => {
     try {
       setConsentGiven(false);
       setStep(2);
-      router.push("/(driver)/verify" as any);
+      router.push("/(auth)/sign-in" as any);
     } catch (error) {
       console.error("KYC navigation error:", error);
     }
@@ -20,7 +24,7 @@ export default function KycIntroScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={handleBack} style={styles.backBtn}>
           <Text style={styles.backArrow}>‹</Text>
         </Pressable>
       </View>
