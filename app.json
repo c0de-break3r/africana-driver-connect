@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Africana Driver Connect",
-    "slug": "africana-driver-connect",
+    "name": "Driver Connect",
+    "slug": "driver-connect",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "africanadriverconnect",
+    "icon": "./assets/images/icon.jpg",
+    "scheme": "driverconnect",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/images/icon.jpg",
       "infoPlist": {
-        "NSCameraUsageDescription": "Africana Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via Dojah.",
-        "NSPhotoLibraryUsageDescription": "Africana Driver Connect needs photo library access so you can upload your driver's license if you prefer.",
+        "NSCameraUsageDescription": "Driver Connect uses your camera to scan your driver's license and capture a selfie for identity verification via Dojah.",
+        "NSPhotoLibraryUsageDescription": "Driver Connect needs photo library access so you can upload your driver's license if you prefer.",
         "NSMicrophoneUsageDescription": "Dojah may request microphone access during the video selfie verification step."
       },
       "bundleIdentifier": "com.codebreak3r.africanadriverconnect"
@@ -19,8 +19,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFF8F3",
-        "foregroundImage": "./assets/images/icon.png",
-        "monochromeImage": "./assets/images/icon.png"
+        "foregroundImage": "./assets/images/icon.jpg",
+        "monochromeImage": "./assets/images/icon.jpg"
       },
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
@@ -33,15 +33,16 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/icon.jpg"
     },
     "plugins": [
       "expo-router",
+      "expo-camera",
       [
         "expo-splash-screen",
         {
           "backgroundColor": "#FFF8F3",
-          "image": "./assets/images/icon.png",
+          "image": "./assets/images/icon.jpg",
           "imageWidth": 200
         }
       ],

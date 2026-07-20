@@ -1,95 +1,141 @@
-import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Image } from "expo-image";
+import { router, type Href } from "expo-router";
+import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PrimaryButton } from "@/components/ui";
+import { images } from "@/constants/images";
 import { useKycFlowStore } from "@/store/useKycFlowStore";
-import { Ionicons } from "@expo/vector-icons";
+import { useRoleStore } from "@/store/useRoleStore";
+
+type Service = "transport" | "delivery" | "rental";
+type VehicleType = "car" | "motor";
+
+const SERVICES: Array<{ key: Service; title: string; description: string }> = [
+  { key: "transport", title: "Transport", description: "Ride-hailing and passenger transport" },
+  { key: "delivery", title: "Delivery", description: "Parcel and goods delivery" },
+  { key: "rental", title: "Rental", description: "Vehicle rental services" },
+];
+
+const VEHICLE_TYPES: Array<{ key: VehicleType; label: string; icon: string }> = [
+  { key: "car", label: "Car", icon: "🚗" },
+  { key: "motor", label: "Motor/Okada", icon: "🏍️" },
+];
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const HERO_HEIGHT = SCREEN_HEIGHT * 0.54;
 
 export default function KycIntroScreen() {
-  const { setStep, setConsentGiven } = useKycFlowStore();
+  const { setStatus, setStep } = useKycFlowStore();
+  const setRole = useRoleStore((s) => s.setRole);
+  
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleType | null>(null);
 
-  const handleStart = () => {
+  const toggleService = (service: Service) => {
+    setSelectedServices((prev) => {
+      if (prev.includes(service)) {
+        return prev.filter((s) => s !== service);
+      }
+      return [...prev, service];
+    });
+  };
+
+  const handleNext = () => {
+    if (selectedServices.length === 0 || !selectedVehicle) return;
+    
+    setRole("driver");
+    setStatus("capturing");
+    setStep(2);
+    router.push("/(auth)/sign-in" as Href);
+  };
+
+  const handleBack = () => {
+    // Try to go back, but if no route (e.g., deep link), go to welcome
     try {
-      setConsentGiven(false);
-      setStep(2);
-      router.push("/(auth)/sign-in" as any);
-    } catch (error) {
-      console.error("KYC navigation error:", error);
+      router.back();
+    } catch {
+      router.replace("/(onboarding)/welcome" as Href);
     }
   };
 
+  const canProceed = selectedServices.length > 0 && selectedVehicle !== null;
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* ── Header ── */}
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backBtn}>
+        <Pressable onPress={handleBack} style={styles.backBtn}>
           <Text style={styles.backArrow}>‹</Text>
         </Pressable>
       </View>
 
-      <View style={styles.graphicsContainer}>
-        <View style={styles.idCardContainer}>
-          <View style={styles.idCard}>
-            <View style={styles.photoPlaceholder}>
-              <View style={styles.photoInner} />
-            </View>
-            <View style={styles.textLine} />
-            <View style={[styles.textLine, styles.textLineLong]} />
-            <View style={styles.profileIcon}>
-              <Ionicons name="person" size={20} color="#FFFFFF" />
-            </View>
-          </View>
-        </View>
+      {/* ── Hero image ── */}
+      <View style={styles.imageContainer}>
+        <Image source={images.heroIllustrator} style={styles.heroImage} contentFit="cover" />
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.stepBadge}>
-          <Text style={styles.stepText}>Step 1 of 3</Text>
-        </View>
-
-        <Text style={styles.title}>Verify your identity</Text>
-
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>Choose Services</Text>
         <Text style={styles.subtitle}>
-          It takes about 2 minutes to verify your identity. We need to confirm it&apos;s really you before you can start accepting rides.
+          Choose the services you want to provide. You can change them anytime in your profile.
         </Text>
 
-        <View style={styles.checklist}>
-          <ChecklistItem number={1} title="Scan your ID" description="Passport, driving licence, or national ID card" isActive />
-          <ChecklistItem number={2} title="Take a selfie" description="We&apos;ll match your face to your ID photo" isActive />
-          <ChecklistItem number={3} title="Get verified" description="Usually instant, sometimes a few hours" isActive />
+        <View style={styles.section}>
+          {SERVICES.map((service) => {
+            const isSelected = selectedServices.includes(service.key);
+            return (
+              <Pressable
+                key={service.key}
+                style={[styles.card, isSelected && styles.cardSelected]}
+                onPress={() => toggleService(service.key)}
+              >
+                <View style={styles.cardContent}>
+                  <View style={styles.cardText}>
+                    <Text style={styles.cardTitle}>{service.title}</Text>
+                    <Text style={styles.cardDescription}>{service.description}</Text>
+                  </View>
+                  <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
+                    {isSelected && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
 
-        <Pressable style={styles.continueBtn} onPress={handleStart}>
-          <Text style={styles.continueText}>Start verification</Text>
-        </Pressable>
-
-        <View style={styles.disclosure}>
-          <Ionicons name="lock-closed" size={16} color="#6E7E91" />
-          <Text style={styles.disclosureText}>
-            Your data is encrypted, used only for identity verification, and deleted after 90 days.
-          </Text>
+        <Text style={styles.sectionLabel}>Select Vehicle Type</Text>
+        <View style={styles.vehicleRow}>
+          {VEHICLE_TYPES.map((vtype) => {
+            const isSelected = selectedVehicle === vtype.key;
+            return (
+              <Pressable
+                key={vtype.key}
+                style={[styles.vehicleCard, isSelected && styles.vehicleCardSelected]}
+                onPress={() => setSelectedVehicle(vtype.key)}
+              >
+                <Text style={styles.vehicleIcon}>{vtype.icon}</Text>
+                <Text style={[styles.vehicleLabel, isSelected && styles.vehicleLabelSelected]}>
+                  {vtype.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <PrimaryButton
+          title="Next"
+          onPress={handleNext}
+          disabled={!canProceed}
+        />
       </View>
     </SafeAreaView>
-  );
-}
-
-type ChecklistItemProps = {
-  number: number;
-  title: string;
-  description: string;
-  isActive?: boolean;
-};
-
-function ChecklistItem({ number, title, description, isActive }: ChecklistItemProps) {
-  return (
-    <View style={styles.checklistItem}>
-      <View style={[styles.checklistNumber, isActive && styles.checklistNumberActive]}>
-        <Text style={styles.checklistNumberText}>{number}</Text>
-      </View>
-      <View style={styles.checklistContent}>
-        <Text style={styles.checklistTitle}>{title}</Text>
-        <Text style={styles.checklistDesc}>{description}</Text>
-      </View>
-    </View>
   );
 }
 
@@ -99,6 +145,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF8F3",
   },
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 24,
@@ -123,87 +174,33 @@ const styles = StyleSheet.create({
     color: "#2C3E5B",
     fontWeight: "300",
   },
-  graphicsContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  idCardContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  idCard: {
-    width: 200,
-    height: 140,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#E8ECF0",
-    transform: [{ rotate: "-8deg" }],
-    padding: 12,
-    justifyContent: "space-between",
-  },
-  photoPlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 6,
-    backgroundColor: "#E8ECF0",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  photoInner: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    backgroundColor: "#CBD5E0",
-  },
-  textLine: {
-    height: 2,
-    backgroundColor: "#E8ECF0",
-    borderRadius: 1,
-    marginBottom: 6,
-  },
-  textLineLong: {
-    width: "80%",
-  },
-  profileIcon: {
+  imageContainer: {
     position: "absolute",
-    bottom: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "#2C3E5B",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 5,
+    top: 40,
+    left: 16,
+    right: 16,
+    height: HERO_HEIGHT,
   },
-  content: {
+  heroImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 24,
+  },
+  scroll: {
     flex: 1,
+    marginTop: SCREEN_HEIGHT * 0.53,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 32,
   },
-  stepBadge: {
-    backgroundColor: "#E8ECF0",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    alignSelf: "flex-start",
-    marginBottom: 16,
-  },
-  stepText: {
-    fontSize: 12,
-    color: "#6E7E91",
-    fontWeight: "500",
-  },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "700",
     color: "#2C3E5B",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
@@ -211,75 +208,100 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 20,
     marginBottom: 24,
+    paddingHorizontal: 16,
   },
-  checklist: {
+  section: {
     marginBottom: 24,
   },
-  checklistItem: {
+  card: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  checklistNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#2C3E5B",
-    justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#EAE1D9",
   },
-  checklistNumberActive: {
-    backgroundColor: "#FF7B54",
+  cardSelected: {
+    borderWidth: 2,
+    borderColor: "#FF7B54",
   },
-  checklistNumberText: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  checklistContent: {
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
     flex: 1,
   },
-  checklistTitle: {
-    fontSize: 14,
+  cardText: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
     fontWeight: "600",
     color: "#2C3E5B",
     marginBottom: 2,
   },
-  checklistDesc: {
+  cardDescription: {
     fontSize: 12,
     color: "#6E7E91",
     lineHeight: 16,
   },
-  disclosure: {
-    flexDirection: "row",
-    alignItems: "center",
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "#D1D5DB",
     justifyContent: "center",
-    backgroundColor: "#F5F6F8",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-  },
-  disclosureText: {
-    fontSize: 11,
-    color: "#6E7E91",
-    textAlign: "center",
-    marginLeft: 8,
-    flex: 1,
-  },
-  continueBtn: {
-    backgroundColor: "#2C3E5B",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 12,
     alignItems: "center",
-    justifyContent: "center",
+  },
+  checkboxSelected: {
+    backgroundColor: "#FF7B54",
+    borderColor: "#FF7B54",
+  },
+  checkmark: {
+    fontSize: 14,
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2C3E5B",
     marginBottom: 12,
   },
-  continueText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
+  vehicleRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 24,
+  },
+  vehicleCard: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#EAE1D9",
+  },
+  vehicleCardSelected: {
+    borderWidth: 2,
+    borderColor: "#FF7B54",
+  },
+  vehicleIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  vehicleLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#6E7E91",
+  },
+  vehicleLabelSelected: {
+    color: "#2C3E5B",
+  },
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
   },
 });

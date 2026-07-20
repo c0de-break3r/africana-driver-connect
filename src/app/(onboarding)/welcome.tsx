@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
-import { Link, router, type Href } from "expo-router";
+import { Link, router, useFocusEffect, type Href } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ImageSourcePropType } from "react-native";
 import {
@@ -203,19 +203,7 @@ export default function Welcome() {
     animateText();
   }, [currentSlide, crossfade, animateText]);
 
-  // ── Auto-redirect for saved onboarding progress ──
-  const lastCompletedScreen = useOnboardingAnswersStore(
-    (s) => s.lastCompletedScreen,
-  );
-  useEffect(() => {
-    if (lastCompletedScreen) {
-      const idx = ONBOARDING_SCREENS.indexOf(lastCompletedScreen);
-      const nextScreen = ONBOARDING_SCREENS[idx + 1];
-      if (nextScreen) {
-        router.replace(`/(onboarding)/${nextScreen}` as Href);
-      }
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ── Auto-redirect disabled - causes navigation confusion ──
 
   // ── Auto-advance timer (loops) ──
   useEffect(() => {
