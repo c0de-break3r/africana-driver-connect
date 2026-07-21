@@ -33,9 +33,6 @@ yarn-error.*
 # local env files
 .env*.local
 
-# Convex auto-generated types
-convex/_generated/
-
 # typescript
 *.tsbuildinfo
 
